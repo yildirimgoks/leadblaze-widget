@@ -1,0 +1,45 @@
+{
+  "name": "chatbot-widget",
+  "version": "1.0.0",
+  "description": "Lightweight embeddable chatbot widget",
+  "type": "module",
+  "main": "dist/chatbot-widget.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "jest",
+    "test:e2e": "playwright test",
+    "lint": "eslint src/**/*.js",
+    "size-check": "bundlesize"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.0",
+    "@babel/preset-env": "^7.22.0",
+    "@rollup/plugin-babel": "^6.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "autoprefixer": "^10.4.0",
+    "bundlesize": "^0.18.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "playwright": "^1.35.0",
+    "postcss": "^8.4.0",
+    "rollup": "^3.25.0",
+    "rollup-plugin-postcss": "^4.0.0",
+    "sass": "^1.63.0"
+  },
+  "dependencies": {
+    "dompurify": "^3.0.0"
+  },
+  "bundlesize": [
+    {
+      "path": "./dist/chatbot-widget.js",
+      "maxSize": "25kb",
+      "compression": "gzip"
+    }
+  ],
+  "browserslist": [
+    "defaults",
+    "not IE 11"
+  ]
+}

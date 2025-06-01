@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Widget Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .chat-container {
+            height: 500px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            background: #0066cc;
+            color: white;
+        }
+        
+        .btn:hover {
+            background: #0052a3;
+        }
+        
+        .btn.secondary {
+            background: #6c757d;
+        }
+        
+        .btn.secondary:hover {
+            background: #545b62;
+        }
+        
+        .info-panel {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .code-snippet {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <header class="demo-header">
+            <h1>Chatbot Widget Demo</h1>
+            <p>Interactive examples of the embeddable chatbot widget in different configurations</p>
+        </header>
+
+        <div class="info-panel">
+            <h3>🚀 Quick Start</h3>
+            <p>This demo shows the chatbot widget in various configurations. The widget will connect to a mock backend for demonstration purposes.</p>
+            <div class="code-snippet">
+&lt;script src="dist/chatbot-widget.js">&lt;/script>
+&lt;script>
+  ChatbotWidget.init({
+    clientId: "demo-client", 
+    container: "#chat-container",
+    theme: "light"
+  });
+&lt;/script>
+            </div>
+        </div>
+
+        <div class="demo-grid">
+            <!-- Light Theme Demo -->
+            <div class="demo-card">
+                <h3>💡 Light Theme</h3>
+                <div id="chat-light" class="chat-container"></div>
+                <div class="controls">
+                    <button class="btn" onclick="initLightTheme()">Initialize</button>
+                    <button class="btn secondary" onclick="sendTestMessage('chat-light')">Test Message</button>
+                    <button class="btn secondary" onclick="destroyWidget('chat-light')">Destroy</button>
+                </div>
+            </div>
+
+            <!-- Dark Theme Demo -->
+            <div class="demo-card">
+                <h3>🌙 Dark Theme</h3>
+                <div id="chat-dark" class="chat-container"></div>
+                <div class="controls">
+                    <button class="btn" onclick="initDarkTheme()">Initialize</button>
+                    <button class="btn secondary" onclick="sendTestMessage('chat-dark')">Test Message</button>
+                    <button class="btn secondary" onclick="destroyWidget('chat-dark')">Destroy</button>
+                </div>
+            </div>
+
+            <!-- Custom Theme Demo -->
+            <div class="demo-card">
+                <h3>🎨 Custom Theme</h3>
+                <div id="chat-custom" class="chat-container"></div>
+                <div class="controls">
+                    <button class="btn" onclick="initCustomTheme()">Initialize</button>
+                    <button class="btn secondary" onclick="sendTestMessage('chat-custom')">Test Message</button>
+                    <button class="btn secondary" onclick="destroyWidget('chat-custom')">Destroy</button>
+                </div>
+            </div>
+
+            <!-- Mobile Preview -->
+            <div class="demo-card">
+                <h3>📱 Mobile Preview</h3>
+                <div id="chat-mobile" class="chat-container" style="max-width: 375px; margin: 0 auto;"></div>
+                <div class="controls">
+                    <button class="btn" onclick="initMobileTheme()">Initialize</button>
+                    <button class="btn secondary" onclick="sendTestMessage('chat-mobile')">Test Message</button>
+                    <button class="btn secondary" onclick="destroyWidget('chat-mobile')">Destroy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Documentation -->
+        <div class="demo-card">
+            <h3>📚 API Reference</h3>
+            
+            <h4>Initialization</h4>
+            <div class="code-snippet">
+ChatbotWidget.init({
+  clientId: "your-client-id",       // Required: Client identifier
+  container: "#chat-container",     // Required: CSS selector or DOM element
+  sessionId: "session-uuid",        // Optional: Auto-generated if not provided
+  theme: "light",                   // Optional: "light" | "dark" | "#custom-color"
+  locale: "en",                     // Optional: ISO 639-1 language code
+  apiEndpoint: "https://...",       // Optional: Custom API endpoint
+  greetingMessage: "Hi, I how can I help you?" // Optional: Custom greeting
+});
+            </div>
+
+            <h4>Methods</h4>
+            <div class="code-snippet">
+// Send a message programmatically
+ChatbotWidget.send("Hello, how are you?");
+
+// Destroy the widget
+ChatbotWidget.unmount();
+            </div>
+
+            <h4>Configuration Requirements</h4>
+            <ul>
+                <li><strong>clientId</strong>: Unique identifier for your application (used for analytics and routing)</li>
+                <li><strong>container</strong>: CSS selector or DOM element where the widget will be mounted</li>
+            </ul>
+            
+            <h4>Security</h4>
+            <p>This widget uses domain-based authentication. Your backend should validate the Origin/Referer headers to ensure requests are coming from authorized domains. No API keys are required in the frontend code.</p>
+        </div>
+    </div>
+
+    <!-- Load the widget script -->
+    <script src="dist/chatbot-widget.js"></script>
+    
+    <script>
+        // Track which containers have widgets
+        let activeWidget = null;
+
+        // Mock API responses for demo
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url.includes('chatbotbackend.com/chat')) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const responses = [
+                            "Hello! How can I help you today?",
+                            "I'm here to assist you with any questions you might have.",
+                            "Thanks for reaching out! What would you like to know?",
+                            "I understand you need help. What specific information are you looking for?",
+                            "Great question! Let me provide you with some helpful information.",
+                        ];
+                        
+                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                        
+                        resolve({
+                            ok: true,
+                            json: () => Promise.resolve({
+                                body: randomResponse
+                            })
+                        });
+                    }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
+                });
+            }
+            return originalFetch.apply(this, arguments);
+        };
+
+        function initLightTheme() {
+            try {
+                console.log('Initializing light theme...');
+                ChatbotWidget.init({
+                    clientId: "light-theme-demo",
+                    container: "#chat-light",
+                    theme: "light",
+                    locale: "en",
+                    greetingMessage: "Welcome! How can I assist you today?"
+                });
+                activeWidget = 'chat-light';
+                console.log('Light theme initialized successfully');
+                alert('Light theme initialized! You can now send test messages.');
+            } catch (error) {
+                console.error('Light theme error:', error);
+                alert('Error initializing light theme: ' + error.message);
+            }
+        }
+
+        function initDarkTheme() {
+            try {
+                console.log('Initializing dark theme...');
+                ChatbotWidget.init({
+                    clientId: "dark-theme-demo",
+                    container: "#chat-dark",
+                    theme: "dark",
+                    locale: "en",
+                    greetingMessage: "Hi there! Ready to chat in dark mode?"
+                });
+                activeWidget = 'chat-dark';
+                console.log('Dark theme initialized successfully');
+                alert('Dark theme initialized! You can now send test messages.');
+            } catch (error) {
+                console.error('Dark theme error:', error);
+                alert('Error initializing dark theme: ' + error.message);
+            }
+        }
+
+        function initCustomTheme() {
+            try {
+                console.log('Initializing custom theme...');
+                ChatbotWidget.init({
+                    clientId: "custom-theme-demo",
+                    container: "#chat-custom",
+                    theme: "#9c27b0", // Purple theme
+                    locale: "en"
+                });
+                activeWidget = 'chat-custom';
+                console.log('Custom theme initialized successfully');
+                alert('Custom theme initialized! You can now send test messages.');
+            } catch (error) {
+                console.error('Custom theme error:', error);
+                alert('Error initializing custom theme: ' + error.message);
+            }
+        }
+
+        function initMobileTheme() {
+            try {
+                console.log('Initializing mobile theme...');
+                ChatbotWidget.init({
+                    clientId: "mobile-demo",
+                    container: "#chat-mobile",
+                    theme: "light",
+                    locale: "en"
+                });
+                activeWidget = 'chat-mobile';
+                console.log('Mobile theme initialized successfully');
+                alert('Mobile theme initialized! You can now send test messages.');
+            } catch (error) {
+                console.error('Mobile theme error:', error);
+                alert('Error initializing mobile theme: ' + error.message);
+            }
+        }
+
+        function sendTestMessage(containerId) {
+            console.log('Attempting to send test message to:', containerId);
+            console.log('Active widget:', activeWidget);
+            
+            if (activeWidget !== containerId) {
+                alert('Please initialize this widget first!');
+                return;
+            }
+            
+            try {
+                const messages = [
+                    "Hello there!",
+                    "Can you help me with something?",
+                    "What services do you offer?",
+                    "I have a question about your product.",
+                    "This is a test message."
+                ];
+                
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                console.log('Sending message:', randomMessage);
+                
+                ChatbotWidget.send(randomMessage);
+                console.log('Message sent successfully');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Error sending message: ' + error.message);
+            }
+        }
+
+        function destroyWidget(containerId) {
+            try {
+                ChatbotWidget.unmount();
+                if (activeWidget === containerId) {
+                    activeWidget = null;
+                }
+            } catch (error) {
+                alert('Error destroying widget: ' + error.message);
+            }
+        }
+
+        // Debug: Log when window loads
+        window.addEventListener('load', () => {
+            console.log('Demo page loaded, ChatbotWidget available:', typeof ChatbotWidget);
+            console.log('Click any "Initialize" button to start testing!');
+        });
+    </script>
+</body>
+</html>
