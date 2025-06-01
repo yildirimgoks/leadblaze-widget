@@ -6,7 +6,6 @@ This guide covers how to deploy the Leadgate Widget using Docker and static host
 
 ### 1. Docker Deployment
 
-#### Build and Run Locally
 ```bash
 # First, build the widget
 npm run build
@@ -16,21 +15,8 @@ docker build -t leadgate-widget .
 
 # Run the container
 docker run -p 3000:80 leadgate-widget
-```
 
-#### Using Docker Compose
-```bash
-# First, build the widget
-npm run build
-
-# Start the service
-docker-compose up -d
-
-# Check logs
-docker-compose logs -f
-
-# Stop the service
-docker-compose down
+# Widget available at: http://localhost:3000/chatbot-widget.js
 ```
 
 ### 2. Static Hosting Deployment
@@ -97,10 +83,10 @@ HEALTH_CHECK_PATH=/health
 ### Custom Domain Setup
 
 #### Docker with Reverse Proxy
-Update `docker-compose.yml` labels for Traefik:
-```yaml
-labels:
-  - "traefik.http.routers.widget.rule=Host(`widget.yourdomain.com`)"
+Run Docker behind a reverse proxy:
+```bash
+# Run with custom domain via reverse proxy
+docker run -d --name leadgate-widget -p 3000:80 leadgate-widget
 ```
 
 ## 📊 Monitoring and Logs
@@ -116,10 +102,10 @@ The Docker deployment includes health check endpoints:
 #### Docker
 ```bash
 # Real-time logs
-docker-compose logs -f
+docker logs -f leadgate-widget
 
-# Specific service logs
-docker logs container-name
+# Container status
+docker ps
 ```
 
 ### Performance Monitoring

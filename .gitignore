@@ -6,7 +6,6 @@ yarn-error.log*
 package-lock.json
 
 # Production builds
-dist/
 build/
 
 # Environment variables
@@ -104,5 +103,8 @@ temp/
 
 # Railway deployment files (not needed)
 railway.json
+
+# Docker Compose (not needed)
+docker-compose.yml
 
 .claude/
