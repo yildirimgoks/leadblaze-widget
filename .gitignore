@@ -101,10 +101,4 @@ jspm_packages/
 tmp/
 temp/
 
-# Railway deployment files (not needed)
-railway.json
-
-# Docker Compose (not needed)
-docker-compose.yml
-
 .claude/

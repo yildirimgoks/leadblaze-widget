@@ -299,12 +299,13 @@ npm run test:e2e
 ### Demo Page
 Open `demo.html` in your browser to see the widget in action with different configurations.
 
-## 📦 Deployment
+## 📦 Manual Deployment
 
-### CDN Deployment
+To deploy the widget manually:
+
 1. Build the production bundle: `npm run build`
-2. Upload `dist/chatbot-widget.js` to your CDN
-3. Update the script src in your integration code
+2. Upload `dist/chatbot-widget.js` to your hosting service or CDN
+3. Update the script src in your integration code to point to the hosted file
 
 ### Size Budget
 The widget maintains a strict size budget of ≤25KB gzipped. The build process will fail if this limit is exceeded.
