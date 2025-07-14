@@ -1,6 +1,5 @@
 import { Message } from './message.js';
 import { ChatInput } from './chat-input.js';
-import { TypingIndicator } from './typing-indicator.js';
 
 export class ChatUI {
   constructor(shadowWrapper, config, chatAPI) {
@@ -36,10 +35,6 @@ export class ChatUI {
     messagesContainer.setAttribute('aria-live', 'polite');
     messagesContainer.setAttribute('aria-label', 'Chat messages');
     
-    // Typing indicator
-    this.typingIndicator = new TypingIndicator();
-    this.typingIndicator.hide();
-    
     // Input
     this.chatInput = new ChatInput((message) => this.sendMessage(message));
     
@@ -48,7 +43,6 @@ export class ChatUI {
     
     container.appendChild(header);
     container.appendChild(messagesContainer);
-    container.appendChild(this.typingIndicator.getElement());
     container.appendChild(this.chatInput.getElement());
     container.appendChild(this.errorToast);
     
@@ -116,21 +110,23 @@ export class ChatUI {
       const userMessage = new Message(messageText, 'user');
       this.addMessage(userMessage);
       
-      // Disable input and show typing indicator
+      // Create loading bot message immediately
+      const loadingBotMessage = Message.createLoadingMessage();
+      this.addMessage(loadingBotMessage);
+      
+      // Disable input and scroll to bottom
       this.chatInput.disable();
-      this.typingIndicator.show();
       this.scrollToBottom();
       
       // Send to API
       const response = await this.chatAPI.sendMessage(messageText);
       
-      // Hide typing indicator and add bot response
-      this.typingIndicator.hide();
-      const botMessage = new Message(response.content, 'bot');
-      this.addMessage(botMessage);
+      // Update the loading message with actual content
+      loadingBotMessage.updateContent(response.content);
       
     } catch (error) {
-      this.typingIndicator.hide();
+      // Remove the loading message and show error
+      this.removeLastMessage();
       this.showErrorToast(error.message);
     } finally {
       this.chatInput.enable();
@@ -147,6 +143,16 @@ export class ChatUI {
     
     if (this.isAtBottom) {
       this.scrollToBottom();
+    }
+  }
+
+  removeLastMessage() {
+    if (this.messages.length > 0) {
+      const lastMessage = this.messages.pop();
+      const lastElement = lastMessage.getElement();
+      if (lastElement && lastElement.parentNode) {
+        lastElement.parentNode.removeChild(lastElement);
+      }
     }
   }
 
@@ -195,7 +201,6 @@ export class ChatUI {
     
     // Clean up event listeners
     this.chatInput = null;
-    this.typingIndicator = null;
     this.messages = [];
   }
 }

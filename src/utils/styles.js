@@ -116,7 +116,28 @@ const styles = `
   position: relative;
   font-size: 14px;
   line-height: 1.4;
+  transition: opacity 150ms ease;
 }
+
+.message__content .typing-dots {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 20px;
+}
+
+.message__content .typing-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--text-secondary);
+  border-radius: 50%;
+  animation: typingPulse 1.4s infinite ease-in-out both;
+}
+
+.message__content .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.message__content .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+.message__content .typing-dot:nth-child(3) { animation-delay: 0s; }
 
 .message--user .message__content {
   background-color: var(--primary-color);
@@ -186,27 +207,51 @@ const styles = `
 .typing-indicator {
   display: none;
   align-items: center;
-  padding: 0.75rem 1rem;
   align-self: flex-start;
   margin-bottom: 0.5rem;
+  max-width: 75%;
+  margin-right: 20%;
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+  animation: messageEnter 150ms ease forwards;
 }
 
-.typing-dots {
-  display: flex;
-  gap: 0.25rem;
+.typing-indicator__bubble {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  padding: 0.75rem 1rem;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.typing-dot {
-  width: 6px;
-  height: 6px;
-  background-color: var(--text-secondary);
-  border-radius: 50%;
-  animation: typingPulse 1.4s infinite ease-in-out both;
+.typing-indicator__bubble::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -8px;
+  width: 0;
+  height: 0;
+  border: 8px solid transparent;
+  border-right-color: var(--surface-color);
+  border-bottom: 0;
+  border-left: 0;
 }
 
-.typing-dot:nth-child(1) { animation-delay: -0.32s; }
-.typing-dot:nth-child(2) { animation-delay: -0.16s; }
-.typing-dot:nth-child(3) { animation-delay: 0s; }
+.typing-indicator__bubble::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: -9px;
+  width: 0;
+  height: 0;
+  border: 9px solid transparent;
+  border-right-color: var(--border-color);
+  border-bottom: 0;
+  border-left: 0;
+  z-index: -1;
+}
 
 .chat-input {
   border-top: 1px solid var(--border-color);

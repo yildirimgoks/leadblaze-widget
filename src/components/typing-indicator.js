@@ -8,6 +8,9 @@ export class TypingIndicator {
     container.className = 'typing-indicator';
     container.setAttribute('aria-label', 'Bot is typing');
     
+    const bubble = document.createElement('div');
+    bubble.className = 'typing-indicator__bubble';
+    
     const dots = document.createElement('div');
     dots.className = 'typing-dots';
     
@@ -17,7 +20,8 @@ export class TypingIndicator {
       dots.appendChild(dot);
     }
     
-    container.appendChild(dots);
+    bubble.appendChild(dots);
+    container.appendChild(bubble);
     return container;
   }
 

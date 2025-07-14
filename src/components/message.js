@@ -1,10 +1,11 @@
 import DOMPurify from 'dompurify';
 
 export class Message {
-  constructor(content, type = 'user', timestamp = new Date()) {
+  constructor(content, type = 'user', timestamp = new Date(), isLoading = false) {
     this.content = content;
     this.type = type; // 'user' or 'bot'
     this.timestamp = timestamp;
+    this.isLoading = isLoading;
     this.element = this.createElement();
   }
 
@@ -16,13 +17,11 @@ export class Message {
     const messageContent = document.createElement('div');
     messageContent.className = 'message__content';
     
-    // Sanitize content before inserting
-    const sanitizedContent = DOMPurify.sanitize(this.content, {
-      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'code', 'pre'],
-      ALLOWED_ATTR: []
-    });
-    
-    messageContent.innerHTML = sanitizedContent;
+    if (this.isLoading) {
+      this.createLoadingContent(messageContent);
+    } else {
+      this.createTextContent(messageContent);
+    }
     
     const messageTime = document.createElement('div');
     messageTime.className = 'message__time';
@@ -43,6 +42,48 @@ export class Message {
     return messageContainer;
   }
 
+  createLoadingContent(messageContent) {
+    messageContent.innerHTML = '';
+    messageContent.setAttribute('aria-label', 'Bot is typing');
+    
+    const typingDots = document.createElement('div');
+    typingDots.className = 'typing-dots';
+    
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'typing-dot';
+      typingDots.appendChild(dot);
+    }
+    
+    messageContent.appendChild(typingDots);
+  }
+
+  createTextContent(messageContent) {
+    // Sanitize content before inserting
+    const sanitizedContent = DOMPurify.sanitize(this.content, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'code', 'pre'],
+      ALLOWED_ATTR: []
+    });
+    
+    messageContent.innerHTML = sanitizedContent;
+    messageContent.removeAttribute('aria-label');
+  }
+
+  updateContent(newContent) {
+    this.content = newContent;
+    this.isLoading = false;
+    
+    const messageContent = this.element.querySelector('.message__content');
+    
+    // Add a smooth transition effect
+    messageContent.style.opacity = '0.7';
+    
+    setTimeout(() => {
+      this.createTextContent(messageContent);
+      messageContent.style.opacity = '1';
+    }, 150);
+  }
+
   formatTime(date, verbose = false) {
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -56,9 +97,12 @@ export class Message {
     return `${displayHours}:${minutes.toString().padStart(2, '0')}`;
   }
 
-
   getElement() {
     return this.element;
+  }
+
+  static createLoadingMessage() {
+    return new Message('', 'bot', new Date(), true);
   }
 
   static createErrorMessage(errorText) {
