@@ -51,6 +51,10 @@ export class ChatbotWidget {
       }
     }
 
+    if (!config.siteKey) {
+      throw new Error('Site key is required. Please include site-key attribute in the script tag.');
+    }
+
     return {
       clientId: config.clientId,
       sessionId: config.sessionId || generateUUID(),
@@ -58,7 +62,8 @@ export class ChatbotWidget {
       theme: config.theme || 'light',
       locale: config.locale || 'en',
       apiEndpoint: config.apiEndpoint || 'https://leadgate-backend-production.up.railway.app/chat',
-      greetingMessage: config.greetingMessage || 'Hi, I how can I help you?'
+      greetingMessage: config.greetingMessage || 'Hi, I how can I help you?',
+      siteKey: config.siteKey
     };
   }
 

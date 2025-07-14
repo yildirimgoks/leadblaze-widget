@@ -24,10 +24,9 @@ Build a **light‑weight, fully‑responsive JavaScript widget** that any 3rd‑
 <!-- Host decides where the chat appears -->
 <div id="myChatArea"></div>
 
-<script src="https://cdn.ourdomain.com/chatbot-widget.js"></script>
+<script src="https://cdn.ourdomain.com/chatbot-widget.js" site-key="{site_key}" async></script>
 <script>
   ChatbotWidget.init({
-    apiKey: "<client‑public‑key>",
     clientId: "<string>",        // forwarded to backend
     sessionId: "<uuid-v4>",      // auto‑generate if blank
     container: "#myChatArea",     // CSS selector or DOM element
@@ -54,6 +53,7 @@ Build a **light‑weight, fully‑responsive JavaScript widget** that any 3rd‑
    • Graceful UI fallback (toast + retry button).
 4. **Security**
    • All requests via HTTPS.
+   • Site-key authentication: Each widget must include a site-key attribute in the script tag, which is sent as x-site-key header with all API requests.
    • Escape / sanitise user and bot text (DOMPurify).
    • CORS pre‑flight handled by backend.
 

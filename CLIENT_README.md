@@ -18,7 +18,7 @@ A lightweight, embeddable chatbot widget that provides seamless chat functionali
 ### 1. Include the Script
 
 ```html
-<script src="https://retonai.com/chatbot-widget.js"></script>
+<script src="https://retonai.com/chatbot-widget.js" site-key="your-site-key" async></script>
 ```
 
 ### 2. Add a Container
@@ -38,6 +38,8 @@ A lightweight, embeddable chatbot widget that provides seamless chat functionali
 </script>
 ```
 
+**Important:** Make sure to replace `your-site-key` in the script tag with your actual site key provided by your service provider.
+
 ## 📋 Configuration Options
 
 | Option | Type | Required | Default | Description |
@@ -49,6 +51,8 @@ A lightweight, embeddable chatbot widget that provides seamless chat functionali
 | `locale` | string | ❌ | `"en"` | ISO 639-1 language code |
 | `apiEndpoint` | string | ❌ | `"https://leadgate-backend-production.up.railway.app/chat"` | Custom API endpoint |
 | `greetingMessage` | string | ❌ | `"Hi, I how can I help you?"` | Initial bot greeting message |
+
+**Note:** The `site-key` is required and must be provided as an attribute in the script tag, not in the configuration object.
 
 ### Example Configurations
 
@@ -188,6 +192,7 @@ The widget follows WCAG AA guidelines and includes:
 
 ## 🔒 Security
 
+- **Site Key Authentication**: Each widget must include a `site-key` attribute in the script tag, which is sent as `x-site-key` header with all API requests
 - **Domain-Based Authentication**: Backend validates request origin/referer headers
 - **HTTPS Only**: All API requests use HTTPS
 - **Content Sanitization**: DOMPurify sanitizes all message content
@@ -197,7 +202,7 @@ The widget follows WCAG AA guidelines and includes:
 
 ### Backend Security Implementation
 
-Your backend should validate the requesting domain:
+Your backend should validate both the site key and requesting domain:
 
 ```javascript
 // Example Node.js/Express validation
@@ -207,17 +212,33 @@ const allowedDomains = [
   'https://demo.yourcompany.com'
 ];
 
+const validSiteKeys = {
+  'your-site-key-1': 'https://yourwebsite.com',
+  'your-site-key-2': 'https://www.yourwebsite.com',
+  'your-site-key-3': 'https://demo.yourcompany.com'
+};
+
 app.post('/chat', (req, res) => {
+  const siteKey = req.headers['x-site-key'];
   const origin = req.headers.origin || req.headers.referer;
   
-  if (!allowedDomains.some(domain => origin?.startsWith(domain))) {
+  // Validate site key
+  if (!siteKey || !validSiteKeys[siteKey]) {
+    return res.status(401).json({
+      error: 'Invalid or missing site key'
+    });
+  }
+  
+  // Validate domain matches site key
+  const expectedDomain = validSiteKeys[siteKey];
+  if (!origin?.startsWith(expectedDomain)) {
     return res.status(403).json({
-      error: 'Domain not authorized'
+      error: 'Domain not authorized for this site key'
     });
   }
   
   // Process chat request...
-  const { session_id, client_id, body } = req.body;
+  const { sessionId, clientId, content } = req.body;
   // Handle the chat logic
 });
 ```

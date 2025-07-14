@@ -19,12 +19,18 @@ export class ChatAPI {
 
   async makeRequest(payload, attempt = 0) {
     try {
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      };
+
+      if (this.config.siteKey) {
+        headers['x-site-key'] = this.config.siteKey;
+      }
+
       const response = await fetch(this.config.apiEndpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers,
         body: JSON.stringify(payload)
       });
 
