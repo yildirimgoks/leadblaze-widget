@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check CDN Version</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #log {
+            background: #f5f5f5;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        #chat-container {
+            width: 400px;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin: 20px 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Check CDN Version</h1>
+    
+    <div id="log"></div>
+    
+    <button onclick="testCDNVersion()">Test CDN Version</button>
+    <button onclick="clearLog()">Clear Log</button>
+    
+    <div id="chat-container"></div>
+
+    <!-- Load from your actual CDN -->
+    <script src="https://cdn.leadblaze.ai/chatbot-widget.js" site-key="pk_live_yJycPhr7RjBKSbLGl661XA"></script>
+    
+    <script>
+        function log(message) {
+            console.log(message);
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // Intercept fetch to see what's happening
+        const originalFetch = window.fetch;
+        window.fetch = function(...args) {
+            const [url, options] = args;
+            
+            log('🚀 FETCH REQUEST:');
+            log('  URL: ' + url);
+            
+            if (options && options.headers) {
+                log('  Headers: ' + JSON.stringify(options.headers, null, 2));
+                
+                if (options.headers['x-site-key']) {
+                    log('  ✅ x-site-key found: ' + options.headers['x-site-key']);
+                } else {
+                    log('  ❌ x-site-key NOT found');
+                }
+            }
+            
+            return originalFetch.apply(this, args).then(response => {
+                log('📥 Response: ' + response.status + ' ' + response.statusText);
+                return response;
+            }).catch(error => {
+                log('❌ Error: ' + error.message);
+                throw error;
+            });
+        };
+
+        function testCDNVersion() {
+            log('=== Testing CDN Version ===');
+            
+            // Test 1: Check if ChatbotWidget is available
+            if (typeof ChatbotWidget === 'undefined') {
+                log('❌ ChatbotWidget not available - CDN might not be loading');
+                return;
+            }
+            
+            log('✅ ChatbotWidget is available');
+            
+            // Test 2: Check site key extraction manually
+            log('🔍 Testing site key extraction...');
+            
+            // Replicate the exact getCurrentScriptSiteKey function
+            function testGetCurrentScriptSiteKey() {
+                const scripts = document.querySelectorAll('script[site-key]');
+                log('  Scripts with site-key: ' + scripts.length);
+                
+                if (scripts.length > 0) {
+                    const siteKey = scripts[0].getAttribute('site-key');
+                    log('  Site key from first script: ' + siteKey);
+                    return siteKey;
+                }
+                
+                const currentScript = document.currentScript;
+                if (currentScript) {
+                    const siteKey = currentScript.getAttribute('site-key');
+                    log('  Site key from currentScript: ' + siteKey);
+                    return siteKey;
+                }
+                
+                const widgetScripts = document.querySelectorAll('script[src*="chatbot-widget.js"]');
+                log('  Scripts with chatbot-widget.js: ' + widgetScripts.length);
+                
+                for (const script of widgetScripts) {
+                    const siteKey = script.getAttribute('site-key');
+                    if (siteKey) {
+                        log('  Site key from widget script: ' + siteKey);
+                        return siteKey;
+                    }
+                }
+                
+                log('  No site key found');
+                return null;
+            }
+            
+            const extractedSiteKey = testGetCurrentScriptSiteKey();
+            log('🔑 Extracted site key: ' + extractedSiteKey);
+            
+            // Test 3: Initialize widget
+            try {
+                log('🚀 Initializing widget...');
+                
+                ChatbotWidget.init({
+                    clientId: "cdn-test-client",
+                    container: "#chat-container",
+                    theme: "light",
+                    greetingMessage: "CDN test - ready to test API calls"
+                });
+                
+                log('✅ Widget initialized successfully');
+                
+                // Test 4: Send a test message
+                setTimeout(() => {
+                    log('📤 Sending test message...');
+                    ChatbotWidget.send('CDN test message');
+                }, 2000);
+                
+            } catch (error) {
+                log('❌ Error initializing widget: ' + error.message);
+                console.error('Full error:', error);
+            }
+        }
+
+        // Auto-test when page loads
+        window.addEventListener('load', () => {
+            log('Page loaded from CDN');
+            
+            // Add cache-busting info
+            const scripts = document.querySelectorAll('script[src*="chatbot-widget.js"]');
+            if (scripts.length > 0) {
+                log('Widget script URL: ' + scripts[0].src);
+                log('Widget script loaded at: ' + new Date().toISOString());
+            }
+        });
+    </script>
+</body>
+</html> 

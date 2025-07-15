@@ -26,6 +26,9 @@ export class ChatAPI {
 
       if (this.config.siteKey) {
         headers['x-site-key'] = this.config.siteKey;
+        console.log('Chatbot Widget: Adding x-site-key header:', this.config.siteKey);
+      } else {
+        console.warn('Chatbot Widget: No site key found in config');
       }
 
       const response = await fetch(this.config.apiEndpoint, {

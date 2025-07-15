@@ -21,6 +21,8 @@ A lightweight, embeddable chatbot widget that provides seamless chat functionali
 <script src="https://cdn.yourdomain.com/chatbot-widget.js" site-key="your-site-key" async></script>
 ```
 
+**Note:** The `async` attribute is supported and recommended for better page performance. The widget automatically handles timing to ensure the site key is properly extracted regardless of when the script loads.
+
 ### 2. Add a Container
 
 ```html
@@ -190,7 +192,7 @@ The widget follows WCAG AA guidelines and includes:
 
 ## 🔒 Security
 
-- **Site Key Authentication**: Each widget must include a `site-key` attribute in the script tag, which is sent as `x-site-key` header with all API requests
+- **Site Key Authentication**: Each widget must include a `site-key` attribute in the script tag, which is sent as `x-site-key` header with all API requests. The site key is extracted during widget initialization to ensure proper timing regardless of async script loading.
 - **Domain-Based Authentication**: Backend validates request origin/referer headers
 - **HTTPS Only**: All API requests use HTTPS
 - **Content Sanitization**: DOMPurify sanitizes all message content
@@ -303,6 +305,21 @@ Output files:
 - `dist/chatbot-widget.js` - Minified bundle
 - `dist/chatbot-widget.js.map` - Source map
 
+### Technical Implementation Notes
+
+#### Site Key Extraction Timing
+The widget handles site key extraction at initialization time rather than script load time. This ensures that:
+- The `async` attribute works correctly without timing issues
+- The DOM is fully available when the site key is extracted
+- No race conditions occur between script loading and DOM readiness
+
+The `getCurrentScriptSiteKey()` function uses multiple fallback strategies:
+1. Query for `script[site-key]` elements
+2. Check `document.currentScript` for non-async scripts
+3. Search for scripts containing `chatbot-widget.js` in the src
+
+This approach ensures reliable site key extraction across different loading scenarios and browser environments.
+
 ## 🧪 Testing
 
 ### Unit Tests
@@ -343,6 +360,7 @@ The widget maintains a strict size budget of ≤25KB gzipped. The build process 
 - Check that your backend supports CORS
 - Ensure the API endpoint is accessible
 - Confirm the site key is properly configured on your backend
+- The widget automatically extracts the site key at initialization time, so timing issues with async loading are handled internally
 
 #### Styling issues
 - The widget uses Shadow DOM for isolation

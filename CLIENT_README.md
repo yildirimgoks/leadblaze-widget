@@ -21,6 +21,8 @@ A lightweight, embeddable chatbot widget that provides seamless chat functionali
 <script src="https://retonai.com/chatbot-widget.js" site-key="your-site-key" async></script>
 ```
 
+**Note:** The `async` attribute is supported and recommended for better page performance. The widget automatically handles timing to ensure the site key is properly extracted regardless of when the script loads.
+
 ### 2. Add a Container
 
 ```html
@@ -192,7 +194,7 @@ The widget follows WCAG AA guidelines and includes:
 
 ## 🔒 Security
 
-- **Site Key Authentication**: Each widget must include a `site-key` attribute in the script tag, which is sent as `x-site-key` header with all API requests
+- **Site Key Authentication**: Each widget must include a `site-key` attribute in the script tag, which is sent as `x-site-key` header with all API requests. The site key is extracted during widget initialization to ensure proper timing regardless of async script loading.
 - **Domain-Based Authentication**: Backend validates request origin/referer headers
 - **HTTPS Only**: All API requests use HTTPS
 - **Content Sanitization**: DOMPurify sanitizes all message content

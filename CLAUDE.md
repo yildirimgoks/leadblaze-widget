@@ -53,7 +53,7 @@ Build a **light‑weight, fully‑responsive JavaScript widget** that any 3rd‑
    • Graceful UI fallback (toast + retry button).
 4. **Security**
    • All requests via HTTPS.
-   • Site-key authentication: Each widget must include a site-key attribute in the script tag, which is sent as x-site-key header with all API requests.
+   • Site-key authentication: Each widget must include a site-key attribute in the script tag, which is sent as x-site-key header with all API requests. Site key is extracted during widget initialization to ensure proper timing with DOM availability.
    • Escape / sanitise user and bot text (DOMPurify).
    • CORS pre‑flight handled by backend.
 
