@@ -48,6 +48,7 @@ A lightweight, embeddable chatbot widget that provides seamless chat functionali
 | `container` | string/Element | ✅ | - | CSS selector or DOM element |
 | `sessionId` | string | ❌ | auto-generated | Chat session ID (UUID v4) |
 | `theme` | string | ❌ | `"light"` | `"light"` \| `"dark"` \| hex color |
+| `themeMode` | string | ❌ | auto-detect | `"light"` \| `"dark"` (for custom themes only) |
 | `locale` | string | ❌ | `"en"` | ISO 639-1 language code |
 | `apiEndpoint` | string | ❌ | `"https://leadgate-backend-production.up.railway.app/chat"` | Custom API endpoint |
 | `greetingMessage` | string | ❌ | `"Hi, I how can I help you?"` | Initial bot greeting message |
@@ -73,12 +74,32 @@ ChatbotWidget.init({
 });
 ```
 
-#### Custom Theme Color
+#### Custom Theme Color (Auto-detect)
 ```javascript
 ChatbotWidget.init({
   clientId: "my-website",
   container: "#chat-widget", 
-  theme: "#9c27b0" // Purple theme
+  theme: "#9c27b0" // Purple theme - system auto-detects light/dark
+});
+```
+
+#### Custom Theme with Explicit Mode
+```javascript
+ChatbotWidget.init({
+  clientId: "my-website",
+  container: "#chat-widget", 
+  theme: "#9c27b0", // Purple theme
+  themeMode: "light" // Force light theme styling
+});
+```
+
+#### Custom Dark Theme
+```javascript
+ChatbotWidget.init({
+  clientId: "my-website",
+  container: "#chat-widget", 
+  theme: "#ff5722", // Orange theme
+  themeMode: "dark" // Force dark theme styling
 });
 ```
 

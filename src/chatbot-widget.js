@@ -55,11 +55,17 @@ export class ChatbotWidget {
       throw new Error('Site key is required. Please include site-key attribute in the script tag.');
     }
 
+    // Validate themeMode if provided
+    if (config.themeMode && !['light', 'dark'].includes(config.themeMode)) {
+      throw new Error('themeMode must be either "light" or "dark"');
+    }
+
     return {
       clientId: config.clientId,
       sessionId: config.sessionId || generateUUID(),
       container: config.container,
       theme: config.theme || 'light',
+      themeMode: config.themeMode, // Optional: 'light' or 'dark' for custom themes
       locale: config.locale || 'en',
       apiEndpoint: config.apiEndpoint || 'https://leadgate-backend-production.up.railway.app/chat',
       greetingMessage: config.greetingMessage || 'Hi, I how can I help you?',

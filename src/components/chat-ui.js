@@ -188,7 +188,7 @@ export class ChatUI {
 
   applyCustomTheme(primaryColor) {
     // Generate complementary colors for the custom theme
-    const customTheme = this.generateCustomTheme(primaryColor);
+    const customTheme = this.generateCustomTheme(primaryColor, this.config.themeMode);
     
     // Apply all the custom theme variables
     Object.entries(customTheme).forEach(([property, value]) => {
@@ -196,15 +196,22 @@ export class ChatUI {
     });
   }
 
-  generateCustomTheme(primaryColor) {
+  generateCustomTheme(primaryColor, explicitMode = null) {
     // Parse the hex color to RGB
     const rgb = this.hexToRgb(primaryColor);
     
-    // Calculate luminance to determine if we need light or dark variations
-    const luminance = this.calculateLuminance(rgb.r, rgb.g, rgb.b);
-    const isLight = luminance > 0.5;
+    // Determine if we should use light or dark theme
+    let isLight;
+    if (explicitMode) {
+      // Use explicit mode if provided
+      isLight = explicitMode === 'light';
+    } else {
+      // Fall back to auto-detection based on luminance
+      const luminance = this.calculateLuminance(rgb.r, rgb.g, rgb.b);
+      isLight = luminance > 0.5;
+    }
     
-    // Generate hover color (slightly darker)
+    // Generate hover color (slightly darker for light themes, lighter for dark themes)
     const hoverColor = this.adjustBrightness(primaryColor, isLight ? -0.15 : 0.15);
     
     // Generate theme colors with good contrast
