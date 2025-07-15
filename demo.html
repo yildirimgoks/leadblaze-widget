@@ -116,6 +116,16 @@
             <h3>🚀 Quick Start</h3>
             <p>This demo shows the chatbot widget in various configurations. The widget will connect to a mock backend for demonstration purposes.</p>
             <div class="code-snippet">
+                <!-- Include the widget script with your site key -->
+                &lt;script src="https://retonai.com/chatbot-widget.js" site-key="your-site-key" async&gt;&lt;/script&gt;
+
+                <!-- Initialize the widget -->
+                &lt;script&gt;
+                    ChatbotWidget.init({
+                        clientId: "your-client-id",
+                        container: "#chat-container"
+                    });
+                &lt;/script&gt;
             </div>
         </div>
 
@@ -169,6 +179,16 @@
         <div class="demo-card">
             <h3>📚 API Reference</h3>
             
+            <h4>Script Installation</h4>
+            <div class="code-snippet">
+<!-- Include the widget script with site key -->
+&lt;script 
+    src="https://retonai.com/chatbot-widget.js" 
+    site-key="your-site-key" 
+    async
+&gt;&lt;/script&gt;
+            </div>
+            
             <h4>Initialization</h4>
             <div class="code-snippet">
 ChatbotWidget.init({
@@ -193,17 +213,18 @@ ChatbotWidget.unmount();
 
             <h4>Configuration Requirements</h4>
             <ul>
+                <li><strong>site-key</strong>: Required authentication key provided as script attribute</li>
                 <li><strong>clientId</strong>: Unique identifier for your application (used for analytics and routing)</li>
                 <li><strong>container</strong>: CSS selector or DOM element where the widget will be mounted</li>
             </ul>
             
             <h4>Security</h4>
-            <p>This widget uses domain-based authentication. Your backend should validate the Origin/Referer headers to ensure requests are coming from authorized domains. No API keys are required in the frontend code.</p>
+            <p>This widget uses site-key authentication. Your backend should validate both the site-key (sent as x-site-key header) and the Origin/Referer headers to ensure requests are coming from authorized domains.</p>
         </div>
     </div>
 
     <!-- Load the widget script -->
-    <script src="dist/chatbot-widget.js"></script>
+    <script src="dist/chatbot-widget.js" site-key="demo-site-key"></script>
     
     <script>
         // Track which containers have widgets
