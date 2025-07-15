@@ -181,9 +181,78 @@ export class ChatUI {
     } else if (theme === 'light') {
       this.container.classList.add('chatbot-widget--light');
     } else if (typeof theme === 'string' && theme.startsWith('#')) {
-      // Custom theme color
-      this.container.style.setProperty('--primary-color', theme);
+      // Custom theme color - generate a complete theme palette
+      this.applyCustomTheme(theme);
     }
+  }
+
+  applyCustomTheme(primaryColor) {
+    // Generate complementary colors for the custom theme
+    const customTheme = this.generateCustomTheme(primaryColor);
+    
+    // Apply all the custom theme variables
+    Object.entries(customTheme).forEach(([property, value]) => {
+      this.container.style.setProperty(property, value);
+    });
+  }
+
+  generateCustomTheme(primaryColor) {
+    // Parse the hex color to RGB
+    const rgb = this.hexToRgb(primaryColor);
+    
+    // Calculate luminance to determine if we need light or dark variations
+    const luminance = this.calculateLuminance(rgb.r, rgb.g, rgb.b);
+    const isLight = luminance > 0.5;
+    
+    // Generate hover color (slightly darker)
+    const hoverColor = this.adjustBrightness(primaryColor, isLight ? -0.15 : 0.15);
+    
+    // Generate theme colors with good contrast
+    return {
+      '--primary-color': primaryColor,
+      '--primary-hover': hoverColor,
+      '--background-color': isLight ? '#ffffff' : '#1a1a1a',
+      '--surface-color': isLight ? '#f8f9fa' : '#2d2d2d',
+      '--text-primary': isLight ? '#1a1a1a' : '#ffffff',
+      '--text-secondary': isLight ? '#6c757d' : '#b0b0b0',
+      '--border-color': isLight ? '#e9ecef' : '#404040',
+      '--shadow-light': isLight ? '0 2px 8px rgba(0, 0, 0, 0.1)' : '0 2px 8px rgba(0, 0, 0, 0.3)',
+      '--shadow-medium': isLight ? '0 4px 16px rgba(0, 0, 0, 0.15)' : '0 4px 16px rgba(0, 0, 0, 0.4)'
+    };
+  }
+
+  hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  }
+
+  calculateLuminance(r, g, b) {
+    // Convert RGB to relative luminance
+    const [rs, gs, bs] = [r, g, b].map(c => {
+      c = c / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+  }
+
+  adjustBrightness(hex, factor) {
+    const rgb = this.hexToRgb(hex);
+    if (!rgb) return hex;
+    
+    const adjust = (value) => {
+      const adjusted = Math.round(value * (1 + factor));
+      return Math.max(0, Math.min(255, adjusted));
+    };
+    
+    const r = adjust(rgb.r);
+    const g = adjust(rgb.g);
+    const b = adjust(rgb.b);
+    
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   }
 
   showGreeting() {
