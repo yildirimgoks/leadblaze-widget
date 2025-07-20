@@ -22,6 +22,8 @@ export class ChatInput {
     textarea.rows = 1;
     textarea.setAttribute('aria-label', 'Type your message');
     textarea.setAttribute('maxlength', '2000');
+    // Prevent iOS Safari auto-zoom by setting font-size to 16px minimum
+    textarea.style.fontSize = '16px';
     
     const sendButton = document.createElement('button');
     sendButton.type = 'submit';
@@ -60,12 +62,13 @@ export class ChatInput {
       this.handleSubmit();
     });
     
-    // Handle virtual keyboard on mobile
-    if ('visualViewport' in window) {
-      window.visualViewport.addEventListener('resize', () => {
-        this.handleViewportResize();
-      });
-    }
+    // Handle virtual keyboard on mobile - ensure input stays visible
+    textarea.addEventListener('focus', () => {
+      // Small delay to ensure keyboard animation has started
+      setTimeout(() => {
+        textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 100);
+    });
   }
 
   autoResize() {
@@ -89,18 +92,6 @@ export class ChatInput {
     }
   }
 
-  handleViewportResize() {
-    // Adjust for virtual keyboard on mobile
-    const viewport = window.visualViewport;
-    if (viewport) {
-      const heightDiff = window.innerHeight - viewport.height;
-      if (heightDiff > 150) { // Virtual keyboard is likely open
-        this.element.style.paddingBottom = `${heightDiff}px`;
-      } else {
-        this.element.style.paddingBottom = '';
-      }
-    }
-  }
 
   disable() {
     this.isDisabled = true;
