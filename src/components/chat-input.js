@@ -42,6 +42,7 @@ export class ChatInput {
   setupEventListeners() {
     const textarea = this.getTextarea();
     const form = this.getForm();
+    const inputContainer = this.element.querySelector('.chat-input__container');
     
     // Auto-resize textarea
     textarea.addEventListener('input', () => {
@@ -60,6 +61,14 @@ export class ChatInput {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       this.handleSubmit();
+    });
+    
+    // Make entire input container clickable to focus textarea
+    inputContainer.addEventListener('click', (e) => {
+      // Don't interfere if user clicks the send button
+      if (!e.target.closest('.chat-input__send')) {
+        textarea.focus();
+      }
     });
     
     // Handle virtual keyboard on mobile - ensure input stays visible
