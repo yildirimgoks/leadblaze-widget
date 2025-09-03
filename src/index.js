@@ -33,12 +33,19 @@ const widget = new ChatbotWidget();
 
 window.ChatbotWidget = {
   init: (config) => {
-    const siteKey = getCurrentScriptSiteKey();
+    // Use siteKey from config if provided, otherwise try to extract from script tag
+    const scriptSiteKey = getCurrentScriptSiteKey();
+    const siteKey = config.siteKey || scriptSiteKey;
+    
+    if (!siteKey) {
+      console.error('Chatbot Widget: No site-key found. Please provide site-key in config or as script attribute.');
+    }
+    
     const configWithSiteKey = {
       ...config,
       siteKey: siteKey
     };
-    console.log('Chatbot Widget: Site key extracted:', siteKey);
+    console.log('Chatbot Widget: Site key:', siteKey ? 'Found' : 'Missing');
     console.log('Chatbot Widget: Initializing with config:', configWithSiteKey);
     return widget.init(configWithSiteKey);
   },

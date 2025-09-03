@@ -1,0 +1,4 @@
+# WordPress plugin build artifacts
+*.zip
+build/
+.DS_Store

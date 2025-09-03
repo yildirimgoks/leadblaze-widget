@@ -68,12 +68,44 @@ const styles = `
   color: white;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
 }
 
 .chatbot-widget__title {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+
+.chatbot-widget__collapse-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  right: 12px;
+}
+
+.chatbot-widget__collapse-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-widget__collapse-btn:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 .chatbot-widget__messages {

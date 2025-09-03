@@ -1,0 +1,84 @@
+.chatbot-widget-admin-notice {
+    margin: 15px 0;
+    padding: 12px;
+    background: #fff;
+    border-left: 4px solid #00a0d2;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+
+.chatbot-widget-admin-notice.error {
+    border-left-color: #dc3232;
+}
+
+.chatbot-widget-admin-notice.success {
+    border-left-color: #46b450;
+}
+
+.form-table th {
+    width: 200px;
+}
+
+.chatbot-widget-help {
+    max-width: 800px;
+}
+
+.chatbot-widget-status {
+    display: inline-block;
+    padding: 3px 8px;
+    background: #f0f0f1;
+    border-radius: 3px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.chatbot-widget-status.connected {
+    background: #d4f4dd;
+    color: #1e6b3b;
+}
+
+.chatbot-widget-status.error {
+    background: #fecaca;
+    color: #991b1b;
+}
+
+/* Color picker styling */
+.chatbot-color-picker {
+    width: 100px !important;
+}
+
+.chatbot-color-picker.invalid-color {
+    border-color: #dc3232 !important;
+    box-shadow: 0 0 2px rgba(204, 48, 48, 0.8) !important;
+}
+
+.wp-picker-container .wp-color-result {
+    margin-right: 10px;
+}
+
+/* Form validation styling */
+.settings-error {
+    margin: 15px 0;
+}
+
+/* Character counter styling */
+.char-counter {
+    font-size: 12px;
+    font-weight: normal;
+    margin-left: 10px;
+    color: #666;
+}
+
+.char-counter.near-limit {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.char-counter.over-limit {
+    color: #d63638;
+    font-weight: 700;
+}
+
+#greeting_message.over-limit {
+    border-color: #d63638 !important;
+    box-shadow: 0 0 2px rgba(214, 54, 56, 0.8) !important;
+}

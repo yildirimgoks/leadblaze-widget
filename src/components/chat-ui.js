@@ -25,8 +25,19 @@ export class ChatUI {
     // Header
     const header = document.createElement('div');
     header.className = 'chatbot-widget__header';
+    
+    // Check if this is a floating widget
+    const isFloating = this.config.container && this.config.container === '#chatbot-widget-container';
+    
     header.innerHTML = `
       <h2 class="chatbot-widget__title">Chat Support</h2>
+      ${isFloating ? `
+        <button class="chatbot-widget__collapse-btn" title="Minimize" aria-label="Minimize chat">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      ` : ''}
     `;
     
     // Messages container
@@ -49,6 +60,11 @@ export class ChatUI {
     this.shadowWrapper.appendChild(container);
     this.container = container;
     this.messagesContainer = messagesContainer;
+    
+    // Setup floating widget functionality if needed
+    if (isFloating) {
+      this.setupFloatingWidget();
+    }
     
     // Add entrance animation
     requestAnimationFrame(() => {
@@ -269,6 +285,144 @@ export class ChatUI {
     }
   }
 
+  setupFloatingWidget() {
+    // Setup collapse functionality
+    const collapseBtn = this.container.querySelector('.chatbot-widget__collapse-btn');
+    if (collapseBtn) {
+      collapseBtn.addEventListener('click', () => this.collapseWidget());
+    }
+
+    // Setup collapsed button functionality
+    const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
+    if (collapsedContainer) {
+      const expandBtn = collapsedContainer.querySelector('.chatbot-collapsed-button');
+      const closeBtn = collapsedContainer.querySelector('.chatbot-close-button');
+      
+      if (expandBtn) {
+        expandBtn.addEventListener('click', () => this.expandWidget());
+      }
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => this.closeWidget());
+      }
+    }
+
+    // Handle initial state with persistence
+    this.applyStoredState();
+  }
+
+  collapseWidget(saveState = true) {
+    const widgetContainer = document.getElementById('chatbot-widget-container');
+    const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
+    
+    if (widgetContainer && collapsedContainer) {
+      widgetContainer.style.display = 'none';
+      collapsedContainer.style.display = 'flex';
+      if (saveState) {
+        this.saveWidgetState('collapsed');
+      }
+    }
+  }
+
+  expandWidget(saveState = true) {
+    const widgetContainer = document.getElementById('chatbot-widget-container');
+    const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
+    
+    if (widgetContainer && collapsedContainer) {
+      collapsedContainer.style.display = 'none';
+      widgetContainer.style.display = 'block';
+      if (saveState) {
+        this.saveWidgetState('expanded');
+      }
+    }
+  }
+
+  closeWidget(saveState = true) {
+    const widgetContainer = document.getElementById('chatbot-widget-container');
+    const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
+    
+    if (widgetContainer && collapsedContainer) {
+      widgetContainer.style.display = 'none';
+      collapsedContainer.style.display = 'none';
+      if (saveState) {
+        this.saveWidgetState('closed');
+      }
+    }
+  }
+
+  saveWidgetState(state) {
+    try {
+      const stateKey = this.getWidgetStateKey();
+      localStorage.setItem(stateKey, state);
+    } catch (error) {
+      console.warn('Failed to save widget state:', error);
+    }
+  }
+
+  getStoredWidgetState() {
+    try {
+      const stateKey = this.getWidgetStateKey();
+      return localStorage.getItem(stateKey);
+    } catch (error) {
+      console.warn('Failed to get stored widget state:', error);
+      return null;
+    }
+  }
+
+  getWidgetStateKey() {
+    // Create a unique key based on site key or domain to avoid conflicts
+    const siteKey = this.config.siteKey || 'default';
+    const domain = window.location.hostname;
+    return `chatbot-widget-state-${siteKey}-${domain}`;
+  }
+
+  applyStoredState() {
+    // Check if state was already determined by the inline script
+    if (window.__chatbotInitialState) {
+      const presetState = window.__chatbotInitialState;
+      
+      // The state has already been applied via inline script
+      // We just need to ensure our internal state tracking is correct
+      // and save if needed
+      
+      // Save the state if it wasn't already stored
+      const storedState = this.getStoredWidgetState();
+      if (!storedState && presetState) {
+        this.saveWidgetState(presetState);
+      }
+      
+      // Clean up the global variable
+      delete window.__chatbotInitialState;
+      return;
+    }
+    
+    // Fallback for non-WordPress implementations or if something went wrong
+    const storedState = this.getStoredWidgetState();
+    const defaultState = this.config.floatingDefaultState || 'expanded';
+    
+    // Prioritize stored state over default state
+    const finalState = storedState || defaultState;
+    
+    // Apply immediately without delay
+    switch (finalState) {
+      case 'collapsed':
+        this.collapseWidget(false); // Don't save state during initialization
+        break;
+      case 'closed':
+        this.closeWidget(false); // Don't save state during initialization
+        break;
+      case 'expanded':
+      default:
+        this.expandWidget(false); // Don't save state during initialization
+        break;
+    }
+    
+    // Save the initial state only if there was no stored state
+    // This ensures first-time visitors get the default state saved
+    if (!storedState) {
+      this.saveWidgetState(finalState);
+    }
+  }
 
   destroy() {
     if (this.intersectionObserver) {
