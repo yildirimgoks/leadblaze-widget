@@ -172,11 +172,12 @@ class ChatbotWidget {
             'clientId' => $this->options['client_id'],
             'theme' => $this->options['theme_color'], // Pass hex color as theme
             'themeMode' => $this->options['theme'], // Pass light/dark/auto as themeMode
-            'locale' => $this->options['locale']
+            'locale' => $this->options['locale'],
+            'skipGreeting' => true // Skip greeting, we'll inject history or show greeting based on history result
             // Note: siteKey will be extracted from script tag attribute by the widget
         );
         
-        // Add greeting message if set
+        // Add greeting message if set (for fallback use in history injection)
         if (!empty($this->options['greeting_message'])) {
             $config['greetingMessage'] = $this->options['greeting_message'];
         }
@@ -188,18 +189,48 @@ class ChatbotWidget {
             $config['container'] = $this->options['container_selector'];
         }
 
-        $session_id = $this->get_or_create_session_id();
-        if ($session_id) {
-            $config['sessionId'] = $session_id;
-        }
+        // History + persistence helpers (client-side; uses widget's own sessionId)
+        $greeting_message = !empty($this->options['greeting_message']) ? $this->options['greeting_message'] : '';
+        $history_script = $this->get_history_injection_script($greeting_message);
 
         return sprintf(
-            'document.addEventListener("DOMContentLoaded", function() {
-                if (typeof ChatbotWidget !== "undefined") {
-                    ChatbotWidget.init(%s);
+            '%s
+            (function initChatbotWP() {
+                var __cfg = %s;
+                function tryInit() {
+                    if (typeof ChatbotWidget !== "undefined") {
+                        ChatbotWidget.init(__cfg);
+                        var container = __cfg.container || "#chatbot-widget-container";
+                        var instance = ChatbotWidget.getInstance(container);
+                        if (instance) {
+                            wirePersistence(instance);
+                            fetchAndInjectHistory(instance, { greetingMessage: %s });
+                        }
+                        return true;
+                    }
+                    return false;
                 }
-            });',
-            wp_json_encode($config)
+                if (tryInit()) return;
+                if (document.readyState === "loading") {
+                    document.addEventListener("DOMContentLoaded", function() {
+                        if (tryInit()) return;
+                        var attempts = 0;
+                        var interval = setInterval(function() {
+                            attempts++;
+                            if (tryInit() || attempts > 50) { clearInterval(interval); }
+                        }, 100);
+                    });
+                } else {
+                    var attempts = 0;
+                    var interval = setInterval(function() {
+                        attempts++;
+                        if (tryInit() || attempts > 50) { clearInterval(interval); }
+                    }, 100);
+                }
+            })();',
+            $history_script,
+            wp_json_encode($config),
+            wp_json_encode($greeting_message)
         );
     }
 
@@ -228,6 +259,126 @@ class ChatbotWidget {
             
             return $session_id;
         }
+    }
+
+    private function get_history_injection_script($greeting_message = '') {
+        return "
+            // Local persistence helpers (per siteKey + sessionId)
+            function __chatbotHistoryKey(instance) {
+                try {
+                    var siteKey = (instance && instance.config && instance.config.siteKey) || 'default';
+                    var sessionId = (instance && instance.config && instance.config.sessionId) || 'anon';
+                    var domain = window.location.hostname;
+                    return 'chatbot-history-' + siteKey + '-' + sessionId + '-' + domain;
+                } catch (e) { return 'chatbot-history-fallback'; }
+            }
+            function loadLocalHistory(instance) {
+                try {
+                    var key = __chatbotHistoryKey(instance);
+                    var raw = localStorage.getItem(key);
+                    if (!raw) return null;
+                    var parsed = JSON.parse(raw);
+                    return Array.isArray(parsed) ? parsed : null;
+                } catch (e) { return null; }
+            }
+            function saveLocalHistory(instance, history) {
+                try {
+                    var key = __chatbotHistoryKey(instance);
+                    localStorage.setItem(key, JSON.stringify(history || []));
+                } catch (e) {}
+            }
+            function persistFromInstance(instance) {
+                try {
+                    var ui = instance && instance.chatUI;
+                    if (!ui || !Array.isArray(ui.messages)) return;
+                    var history = ui.messages.map(function(m) {
+                        var sender = (m.type === 'bot') ? 'ai' : 'user';
+                        return { sender: sender, content: m.content };
+                    });
+                    saveLocalHistory(instance, history);
+                } catch (e) {}
+            }
+            function wirePersistence(instance) {
+                try {
+                    var ui = instance && instance.chatUI;
+                    if (!ui || typeof ui.addMessageToUI !== 'function') return;
+                    var originalAdd = ui.addMessageToUI.bind(ui);
+                    ui.addMessageToUI = function(message) {
+                        // Persist after any message is added to UI (user or bot/loading)
+                        originalAdd(message);
+                        // Patch this message's updateContent to persist after bot response arrives
+                        try {
+                            if (message && typeof message.updateContent === 'function' && !message.__wpPersistPatched) {
+                                var origUpdate = message.updateContent.bind(message);
+                                message.updateContent = function(newContent) {
+                                    origUpdate(newContent);
+                                    persistFromInstance(instance);
+                                };
+                                message.__wpPersistPatched = true;
+                            }
+                        } catch (_) {}
+                        persistFromInstance(instance);
+                    };
+                } catch (e) {}
+            }
+            // Fetch from backend if no local history
+            function fetchAndInjectHistory(instance, opts) {
+                opts = opts || {};
+                var greeting = opts.greetingMessage || '';
+                try {
+                    var local = loadLocalHistory(instance);
+                    if (local && local.length > 0) {
+                        instance.injectHistory(local);
+                        return;
+                    }
+                } catch (e) {}
+                try {
+                    var cfg = instance && instance.config ? instance.config : {};
+                    var endpoint = (cfg.apiEndpoint || 'https://leadgate-backend-production.up.railway.app/chat').replace('/chat','/get-session-history');
+                    var siteKey = cfg.siteKey || '';
+                    var body = { sessionId: cfg.sessionId, clientId: cfg.clientId };
+                    fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'x-site-key': siteKey
+                        },
+                        body: JSON.stringify(body)
+                    })
+                    .then(function(response){
+                        if (response.ok) return response.json();
+                        if (response.status === 404) return [];
+                        throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                    })
+                    .then(function(history){
+                        if (Array.isArray(history) && history.length > 0) {
+                            instance.injectHistory(history);
+                            saveLocalHistory(instance, history);
+                        } else if (greeting) {
+                            instance.injectHistory([{ sender: 'ai', content: greeting }]);
+                            saveLocalHistory(instance, [{ sender: 'ai', content: greeting }]);
+                        }
+                    })
+                    .catch(function(error){
+                        console.error('WordPress: Failed to fetch conversation history:', error);
+                        if (greeting) {
+                            instance.injectHistory([{ sender: 'ai', content: greeting }]);
+                        }
+                    });
+                } catch (e) {
+                    if (greeting) {
+                        try { instance.injectHistory([{ sender: 'ai', content: greeting }]); } catch (_) {}
+                    }
+                }
+            }
+        ";
+    }
+
+    private function get_history_api_endpoint() {
+        // Use the same API endpoint as the widget but for get-session-history
+        $api_endpoint = 'https://leadgate-backend-production.up.railway.app/chat';
+        return str_replace('/chat', '/get-session-history', $api_endpoint);
     }
 
     public function maybe_render_floating() {
@@ -426,22 +577,53 @@ class ChatbotWidget {
         ?>
         <div id="<?php echo $container_id; ?>" style="width: <?php echo esc_attr($atts['width']); ?>; height: <?php echo esc_attr($atts['height']); ?>;"></div>
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                if (typeof ChatbotWidget !== 'undefined') {
-                    ChatbotWidget.init({
-                        clientId: <?php echo wp_json_encode($this->options['client_id']); ?>,
-                        siteKey: <?php echo wp_json_encode($this->options['site_key']); ?>,
-                        container: '#<?php echo $container_id; ?>',
-                        theme: <?php echo wp_json_encode($atts['theme']); ?>,
-                        themeMode: <?php echo wp_json_encode($this->options['theme']); ?>,
-                        locale: <?php echo wp_json_encode($atts['locale']); ?>,
-                        <?php if (!empty($this->options['greeting_message'])): ?>
-                        greetingMessage: <?php echo wp_json_encode($this->options['greeting_message']); ?>,
-                        <?php endif; ?>
-                        sessionId: <?php echo wp_json_encode($this->get_or_create_session_id()); ?>
-                    });
+            <?php
+                $greeting_message = !empty($this->options['greeting_message']) ? $this->options['greeting_message'] : '';
+                echo $this->get_history_injection_script($greeting_message);
+            ?>
+            (function initChatWidget() {
+                var __cfg = {
+                    clientId: <?php echo wp_json_encode($this->options['client_id']); ?>,
+                    siteKey: <?php echo wp_json_encode($this->options['site_key']); ?>,
+                    container: '#<?php echo $container_id; ?>',
+                    theme: <?php echo wp_json_encode($atts['theme']); ?>,
+                    themeMode: <?php echo wp_json_encode($this->options['theme']); ?>,
+                    locale: <?php echo wp_json_encode($atts['locale']); ?>,
+                    skipGreeting: true
+                    <?php if (!empty($this->options['greeting_message'])): ?>
+                    ,greetingMessage: <?php echo wp_json_encode($this->options['greeting_message']); ?>
+                    <?php endif; ?>
+                };
+                function tryInit() {
+                    if (typeof ChatbotWidget !== 'undefined') {
+                        ChatbotWidget.init(__cfg);
+                        var instance = ChatbotWidget.getInstance(__cfg.container);
+                        if (instance) {
+                            wirePersistence(instance);
+                            fetchAndInjectHistory(instance, { greetingMessage: <?php echo wp_json_encode($this->options['greeting_message']); ?> });
+                        }
+                        return true;
+                    }
+                    return false;
                 }
-            });
+                if (tryInit()) return;
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', function() {
+                        if (tryInit()) return;
+                        var attempts = 0;
+                        var interval = setInterval(function() {
+                            attempts++;
+                            if (tryInit() || attempts > 50) { clearInterval(interval); }
+                        }, 100);
+                    });
+                } else {
+                    var attempts = 0;
+                    var interval = setInterval(function() {
+                        attempts++;
+                        if (tryInit() || attempts > 50) { clearInterval(interval); }
+                    }, 100);
+                }
+            })();
         </script>
         <?php
         return ob_get_clean();

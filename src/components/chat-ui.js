@@ -1,5 +1,6 @@
 import { Message } from './message.js';
 import { ChatInput } from './chat-input.js';
+import { HistoryAPI } from '../utils/history-api.js';
 
 export class ChatUI {
   constructor(shadowWrapper, config, chatAPI) {
@@ -10,10 +11,25 @@ export class ChatUI {
     this.isAtBottom = true;
     this.intersectionObserver = null;
     
+    // Initialize history API for backend-based conversation history
+    this.historyAPI = new HistoryAPI(config);
+    
     this.createElement();
     this.setupScrollObserver();
     this.applyTheme();
-    this.showGreeting();
+    
+    // Add entrance animation and focus input
+    requestAnimationFrame(() => {
+      this.container.classList.add('chatbot-widget--visible');
+    });
+    
+    // Focus input after initialization
+    setTimeout(() => this.chatInput.focus(), 100);
+    
+    // Show greeting if no history will be injected
+    if (!config.skipGreeting) {
+      this.showGreeting();
+    }
   }
 
   createElement() {
@@ -66,13 +82,42 @@ export class ChatUI {
       this.setupFloatingWidget();
     }
     
-    // Add entrance animation
-    requestAnimationFrame(() => {
-      container.classList.add('chatbot-widget--visible');
+    // Widget is now ready for history injection if needed
+  }
+
+  injectHistory(history) {
+    // Clear any existing messages first
+    this.clearMessages();
+    
+    // Validate and process each message in the history
+    if (history.length > 0) {
+      history.forEach((msgData, index) => {
+        if (msgData && msgData.content && msgData.sender && msgData.content.trim()) {
+          // Map 'ai' sender from backend to 'bot' for UI consistency
+          const uiSender = msgData.sender === 'ai' ? 'bot' : msgData.sender;
+          const message = new Message(msgData.content, uiSender);
+          this.addMessageToUI(message);
+        }
+      });
+      
+      // Scroll to bottom after injecting history
+      setTimeout(() => {
+        this.scrollToBottom();
+      }, 50);
+    }
+  }
+  
+  clearMessages() {
+    // Remove all messages from the UI
+    this.messages.forEach(message => {
+      const element = message.getElement();
+      if (element && element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
     });
     
-    // Focus input after initialization
-    setTimeout(() => this.chatInput.focus(), 100);
+    // Clear the messages array
+    this.messages = [];
   }
 
   createErrorToast() {
@@ -121,8 +166,14 @@ export class ChatUI {
   }
 
   async sendMessage(messageText) {
+    // Guard against destroyed state
+    if (!this.chatInput) {
+      console.warn('ChatUI has been destroyed, cannot send message');
+      return;
+    }
+    
     try {
-      // Add user message
+      // Add user message to UI
       const userMessage = new Message(messageText, 'user');
       this.addMessage(userMessage);
       
@@ -131,33 +182,58 @@ export class ChatUI {
       this.addMessage(loadingBotMessage);
       
       // Disable input and scroll to bottom
-      this.chatInput.disable();
+      if (this.chatInput) {
+        this.chatInput.disable();
+      }
       this.scrollToBottom();
       
-      // Send to API
+      // Send to API (backend handles persistence)
       const response = await this.chatAPI.sendMessage(messageText);
       
       // Update the loading message with actual content
       loadingBotMessage.updateContent(response.content);
+      
+      // That's it! Backend handles all persistence, no client-side saving needed
       
     } catch (error) {
       // Remove the loading message and show error
       this.removeLastMessage();
       this.showErrorToast(error.message);
     } finally {
-      this.chatInput.enable();
-      this.chatInput.focus();
+      if (this.chatInput) {
+        this.chatInput.enable();
+        this.chatInput.focus();
+      }
     }
   }
 
   addMessage(message) {
+    // Add new message to UI (for real-time messages)
+    this.addMessageToUI(message);
+  }
+
+  addMessageToUI(message) {
+    // Simply add message to UI without any persistence logic
+    console.log('ChatbotWidget: addMessageToUI called with message:', message);
+    console.log('ChatbotWidget: Current messages array length before add:', this.messages.length);
+    console.log('ChatbotWidget: Messages container exists:', !!this.messagesContainer);
+    
     this.messages.push(message);
+    
+    const messageElement = message.getElement();
+    console.log('ChatbotWidget: Got message element:', messageElement);
+    console.log('ChatbotWidget: Messages container children before insert:', this.messagesContainer.children.length);
+    
     this.messagesContainer.insertBefore(
-      message.getElement(),
+      messageElement,
       this.messagesContainer.lastElementChild // Insert before sentinel
     );
     
+    console.log('ChatbotWidget: Messages container children after insert:', this.messagesContainer.children.length);
+    console.log('ChatbotWidget: Current messages array length after add:', this.messages.length);
+    
     if (this.isAtBottom) {
+      console.log('ChatbotWidget: Scrolling to bottom');
       this.scrollToBottom();
     }
   }
@@ -278,10 +354,38 @@ export class ChatUI {
     return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
   }
 
+  async loadConversationHistory() {
+    try {
+      const history = await this.historyAPI.getConversationHistory();
+      
+      if (history.length > 0) {
+        // Add each message from history
+        history.forEach((msgData, index) => {
+          if (msgData && msgData.content && msgData.sender && msgData.content.trim()) {
+            // Map 'ai' sender from backend to 'bot' for UI consistency
+            const uiSender = msgData.sender === 'ai' ? 'bot' : msgData.sender;
+            const message = new Message(msgData.content, uiSender);
+            this.addMessageToUI(message); // Add to UI without saving (already saved on backend)
+          }
+        });
+        
+        // Scroll to bottom after loading messages
+        this.scrollToBottom();
+      } else {
+        // No history, show greeting
+        this.showGreeting();
+      }
+    } catch (error) {
+      console.error('ChatbotWidget: Failed to load conversation history:', error);
+      // Still show greeting even if history fails
+      this.showGreeting();
+    }
+  }
+
   showGreeting() {
-    if (this.config.greetingMessage) {
+    if (this.config.greetingMessage && this.messages.length === 0) {
       const greetingMessage = new Message(this.config.greetingMessage, 'bot');
-      this.addMessage(greetingMessage);
+      this.addMessageToUI(greetingMessage); // Add to UI only, don't save greeting
     }
   }
 
@@ -429,8 +533,17 @@ export class ChatUI {
       this.intersectionObserver.disconnect();
     }
     
-    // Clean up event listeners
+    // Properly destroy chat input before nullifying
+    if (this.chatInput && typeof this.chatInput.destroy === 'function') {
+      this.chatInput.destroy();
+    }
+    
+    // Clean up references
     this.chatInput = null;
     this.messages = [];
+    this.chatAPI = null;
+    this.historyAPI = null;
+    this.config = null;
+    this.shadowWrapper = null;
   }
 }

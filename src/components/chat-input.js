@@ -44,40 +44,49 @@ export class ChatInput {
     const form = this.getForm();
     const inputContainer = this.element.querySelector('.chat-input__container');
     
-    // Auto-resize textarea
-    textarea.addEventListener('input', () => {
-      this.autoResize();
-    });
-    
-    // Handle keyboard shortcuts
-    textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+    // Store event handlers for cleanup with proper this binding
+    this.handlers = {
+      input: this.autoResize.bind(this),
+      keydown: (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          this.handleSubmit();
+        }
+      },
+      submit: (e) => {
         e.preventDefault();
         this.handleSubmit();
+      },
+      containerClick: (e) => {
+        // Don't interfere if user clicks the send button
+        if (!e.target.closest('.chat-input__send')) {
+          textarea.focus();
+        }
+      },
+      focus: () => {
+        // Small delay to ensure keyboard animation has started
+        setTimeout(() => {
+          if (textarea && textarea.scrollIntoView) {
+            textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          }
+        }, 100);
       }
-    });
+    };
+    
+    // Auto-resize textarea
+    textarea.addEventListener('input', this.handlers.input);
+    
+    // Handle keyboard shortcuts
+    textarea.addEventListener('keydown', this.handlers.keydown);
     
     // Handle form submission
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      this.handleSubmit();
-    });
+    form.addEventListener('submit', this.handlers.submit);
     
     // Make entire input container clickable to focus textarea
-    inputContainer.addEventListener('click', (e) => {
-      // Don't interfere if user clicks the send button
-      if (!e.target.closest('.chat-input__send')) {
-        textarea.focus();
-      }
-    });
+    inputContainer.addEventListener('click', this.handlers.containerClick);
     
     // Handle virtual keyboard on mobile - ensure input stays visible
-    textarea.addEventListener('focus', () => {
-      // Small delay to ensure keyboard animation has started
-      setTimeout(() => {
-        textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }, 100);
-    });
+    textarea.addEventListener('focus', this.handlers.focus);
   }
 
   autoResize() {
@@ -91,10 +100,15 @@ export class ChatInput {
   handleSubmit() {
     if (this.isDisabled) return;
     
+    // Guard against destroyed state
+    if (!this.onSendMessage || !this.element) return;
+    
     const textarea = this.getTextarea();
+    if (!textarea) return;
+    
     const message = textarea.value.trim();
     
-    if (message) {
+    if (message && this.onSendMessage) {
       this.onSendMessage(message);
       textarea.value = '';
       this.autoResize();
@@ -150,5 +164,35 @@ export class ChatInput {
 
   getElement() {
     return this.element;
+  }
+
+  destroy() {
+    // Prevent callbacks from being called after destroy
+    this.onSendMessage = null;
+    
+    // Remove event listeners if they exist
+    if (this.handlers) {
+      const textarea = this.getTextarea();
+      const form = this.getForm();
+      const inputContainer = this.element.querySelector('.chat-input__container');
+      
+      if (textarea) {
+        textarea.removeEventListener('input', this.handlers.input);
+        textarea.removeEventListener('keydown', this.handlers.keydown);
+        textarea.removeEventListener('focus', this.handlers.focus);
+      }
+      
+      if (form) {
+        form.removeEventListener('submit', this.handlers.submit);
+      }
+      
+      if (inputContainer) {
+        inputContainer.removeEventListener('click', this.handlers.containerClick);
+      }
+    }
+    
+    // Clear references
+    this.handlers = null;
+    this.element = null;
   }
 }

@@ -126,3 +126,6 @@ Build a **light‑weight, fully‑responsive JavaScript widget** that any 3rd‑
 * All tests pass in CI; manual QA checklist signed‑off.
 
 ---
+
+## 11. Working instructions
+* Never, ever interact with git.

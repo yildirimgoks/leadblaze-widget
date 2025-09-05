@@ -20,7 +20,17 @@ export class ChatbotWidget {
       this.unmount();
     }
 
-    this.config = this.validateConfig(config);
+    // Generate or use provided sessionId
+    const sessionId = config.sessionId || this.getOrCreateSessionId(config.siteKey);
+    
+    // Override sessionId in config with the managed sessionId
+    const configWithSession = {
+      ...config,
+      sessionId: sessionId,
+      skipGreeting: !!config.history // Skip greeting if history will be injected
+    };
+
+    this.config = this.validateConfig(configWithSession);
     
     try {
       this.shadowWrapper = new ShadowDOMWrapper(this.config.container);
@@ -32,10 +42,39 @@ export class ChatbotWidget {
       this.setupEventListeners();
       this.isInitialized = true;
       
-      console.log('ChatbotWidget initialized successfully');
+      // Inject history if provided
+      if (config.history && Array.isArray(config.history)) {
+        this.injectHistory(config.history);
+      }
+      
+      console.log('ChatbotWidget initialized successfully with sessionId:', this.config.sessionId);
     } catch (error) {
       console.error('Failed to initialize ChatbotWidget:', error);
       throw error;
+    }
+  }
+
+  getOrCreateSessionId(siteKey) {
+    const sessionKey = `chatbot-session-${siteKey}`;
+    
+    try {
+      // Check if we already have a sessionId in sessionStorage
+      let sessionId = sessionStorage.getItem(sessionKey);
+      
+      if (!sessionId) {
+        // Generate new UUID sessionId
+        sessionId = generateUUID();
+        sessionStorage.setItem(sessionKey, sessionId);
+        console.log('ChatbotWidget: New session created:', sessionId);
+      } else {
+        console.log('ChatbotWidget: Existing session restored:', sessionId);
+      }
+      
+      return sessionId;
+    } catch (error) {
+      console.warn('ChatbotWidget: Failed to access sessionStorage, using temporary session:', error);
+      // Fallback to temporary sessionId if sessionStorage is not available
+      return generateUUID();
     }
   }
 
@@ -89,6 +128,18 @@ export class ChatbotWidget {
     }
 
     this.chatUI.sendMessage(message);
+  }
+
+  injectHistory(history) {
+    if (!this.isInitialized) {
+      throw new Error('Widget not initialized. Call init() first.');
+    }
+
+    if (!Array.isArray(history)) {
+      throw new Error('History must be an array of message objects');
+    }
+
+    this.chatUI.injectHistory(history);
   }
 
 

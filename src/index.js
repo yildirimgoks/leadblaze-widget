@@ -29,7 +29,8 @@ function getCurrentScriptSiteKey() {
   return null;
 }
 
-const widget = new ChatbotWidget();
+// Store multiple widget instances by container
+const widgets = new Map();
 
 window.ChatbotWidget = {
   init: (config) => {
@@ -47,8 +48,53 @@ window.ChatbotWidget = {
     };
     console.log('Chatbot Widget: Site key:', siteKey ? 'Found' : 'Missing');
     console.log('Chatbot Widget: Initializing with config:', configWithSiteKey);
+    
+    const container = configWithSiteKey.container;
+    
+    // If widget already exists for this container, unmount it first
+    if (widgets.has(container)) {
+      console.warn('ChatbotWidget already exists for container', container, ', unmounting previous instance');
+      widgets.get(container).unmount();
+    }
+    
+    // Create new widget instance for this container
+    const widget = new ChatbotWidget();
+    widgets.set(container, widget);
+    
     return widget.init(configWithSiteKey);
   },
-  send: (message) => widget.send(message),
-  unmount: () => widget.unmount()
+  send: (message, container = null) => {
+    // If container specified, send to that widget
+    if (container && widgets.has(container)) {
+      return widgets.get(container).send(message);
+    }
+    
+    // Otherwise, send to the first available widget
+    const widget = widgets.values().next().value;
+    if (widget) {
+      return widget.send(message);
+    }
+    
+    throw new Error('No ChatbotWidget instances found');
+  },
+  unmount: (container = null) => {
+    if (container) {
+      // Unmount specific container
+      if (widgets.has(container)) {
+        widgets.get(container).unmount();
+        widgets.delete(container);
+      }
+    } else {
+      // Unmount all widgets
+      for (const [key, widget] of widgets) {
+        widget.unmount();
+      }
+      widgets.clear();
+    }
+  },
+  
+  // Get widget instance for a specific container (for advanced usage)
+  getInstance: (container) => {
+    return widgets.get(container) || null;
+  }
 };
