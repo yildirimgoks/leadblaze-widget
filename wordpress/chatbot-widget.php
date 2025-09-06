@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name: Chatbot Widget
- * Plugin URI: https://chatbotbackend.com
+ * Plugin Name: LeadBlaze Chat
+ * Plugin URI: https://leadblaze.ai
  * Description: Embeddable chatbot widget for WordPress sites
  * Version: 1.0.0
- * Author: Your Company
+ * Author: LeadBlaze
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: chatbot-widget
@@ -73,7 +73,6 @@ class ChatbotWidget {
             'theme_color' => '#eb4034',
             'theme' => 'light',
             'greeting_message' => '',
-            'locale' => 'en',
             'position' => 'bottom-right',
             'enable_floating' => false,
             'floating_default_state' => 'expanded',
@@ -172,7 +171,6 @@ class ChatbotWidget {
             'clientId' => $this->options['client_id'],
             'theme' => $this->options['theme_color'], // Pass hex color as theme
             'themeMode' => $this->options['theme'], // Pass light/dark/auto as themeMode
-            'locale' => $this->options['locale'],
             'skipGreeting' => true // Skip greeting, we'll inject history or show greeting based on history result
             // Note: siteKey will be extracted from script tag attribute by the widget
         );
@@ -560,15 +558,14 @@ class ChatbotWidget {
 
     public function render_shortcode($atts) {
         if (empty($this->options['site_key'])) {
-            return '<p>' . esc_html__('Please configure the Chatbot Widget in Settings.', 'chatbot-widget') . '</p>';
+            return '<p>' . esc_html__('Please configure the LeadBlaze Chat in Settings.', 'chatbot-widget') . '</p>';
         }
 
         $atts = shortcode_atts(array(
             'container' => 'chatbot-widget-shortcode-' . uniqid(),
             'height' => '600px',
             'width' => '100%',
-            'theme' => $this->options['theme_color'], // Use theme color for shortcode too
-            'locale' => $this->options['locale']
+            'theme' => $this->options['theme_color'] // Use theme color for shortcode too
         ), $atts);
 
         $container_id = esc_attr($atts['container']);
@@ -588,7 +585,6 @@ class ChatbotWidget {
                     container: '#<?php echo $container_id; ?>',
                     theme: <?php echo wp_json_encode($atts['theme']); ?>,
                     themeMode: <?php echo wp_json_encode($this->options['theme']); ?>,
-                    locale: <?php echo wp_json_encode($atts['locale']); ?>,
                     skipGreeting: true
                     <?php if (!empty($this->options['greeting_message'])): ?>
                     ,greetingMessage: <?php echo wp_json_encode($this->options['greeting_message']); ?>
@@ -631,8 +627,8 @@ class ChatbotWidget {
 
     public function add_admin_menu() {
         add_options_page(
-            __('Chatbot Widget Settings', 'chatbot-widget'),
-            __('Chatbot Widget', 'chatbot-widget'),
+            __('LeadBlaze Chat Settings', 'chatbot-widget'),
+            __('LeadBlaze Chat', 'chatbot-widget'),
             'manage_options',
             'chatbot-widget',
             array($this, 'render_admin_page')
@@ -654,7 +650,6 @@ class ChatbotWidget {
         $sanitized['site_key'] = sanitize_text_field($input['site_key'] ?? '');
         $sanitized['client_id'] = sanitize_text_field($input['client_id'] ?? '');
         $sanitized['theme'] = sanitize_text_field($input['theme'] ?? 'light');
-        $sanitized['locale'] = sanitize_text_field($input['locale'] ?? 'en');
         $sanitized['position'] = sanitize_text_field($input['position'] ?? 'bottom-right');
         $sanitized['floating_default_state'] = sanitize_text_field($input['floating_default_state'] ?? 'expanded');
         $sanitized['enable_pages'] = sanitize_text_field($input['enable_pages'] ?? 'all');

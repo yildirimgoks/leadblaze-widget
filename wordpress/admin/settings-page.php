@@ -29,7 +29,7 @@ $options = array_merge($default_options, $saved_options);
                            class="regular-text" 
                            required />
                     <p class="description">
-                        <?php _e('Your unique site key provided by the chatbot service.', 'chatbot-widget'); ?>
+                        <?php _e('Your unique site key provided by LeadBlaze.', 'chatbot-widget'); ?>
                     </p>
                 </td>
             </tr>
@@ -108,25 +108,6 @@ $options = array_merge($default_options, $saved_options);
                 </td>
             </tr>
             
-            <tr>
-                <th scope="row">
-                    <label for="locale"><?php _e('Language', 'chatbot-widget'); ?></label>
-                </th>
-                <td>
-                    <select id="locale" name="chatbot_widget_settings[locale]">
-                        <option value="en" <?php selected($options['locale'], 'en'); ?>>English</option>
-                        <option value="es" <?php selected($options['locale'], 'es'); ?>>Español</option>
-                        <option value="fr" <?php selected($options['locale'], 'fr'); ?>>Français</option>
-                        <option value="de" <?php selected($options['locale'], 'de'); ?>>Deutsch</option>
-                        <option value="it" <?php selected($options['locale'], 'it'); ?>>Italiano</option>
-                        <option value="pt" <?php selected($options['locale'], 'pt'); ?>>Português</option>
-                        <option value="ru" <?php selected($options['locale'], 'ru'); ?>>Русский</option>
-                        <option value="zh" <?php selected($options['locale'], 'zh'); ?>>中文</option>
-                        <option value="ja" <?php selected($options['locale'], 'ja'); ?>>日本語</option>
-                        <option value="ko" <?php selected($options['locale'], 'ko'); ?>>한국어</option>
-                    </select>
-                </td>
-            </tr>
             
             <tr>
                 <th scope="row"><?php _e('Display Mode', 'chatbot-widget'); ?></th>
@@ -266,7 +247,7 @@ $options = array_merge($default_options, $saved_options);
         <code>[chatbot_widget]</code>
         
         <p><?php _e('With custom parameters:', 'chatbot-widget'); ?></p>
-        <code>[chatbot_widget height="500px" width="400px" theme="dark" locale="es"]</code>
+        <code>[chatbot_widget height="500px" width="400px" theme="dark"]</code>
         
         <h3><?php _e('PHP Function', 'chatbot-widget'); ?></h3>
         <p><?php _e('For theme developers:', 'chatbot-widget'); ?></p>
@@ -282,8 +263,7 @@ ChatbotWidget.unmount();
 
 // Re-initialize with new config
 ChatbotWidget.init({
-    theme: 'dark',
-    locale: 'fr'
+    theme: 'dark'
 });</code></pre>
     </div>
 </div>

@@ -1,5 +1,5 @@
-=== Chatbot Widget ===
-Contributors: yourcompany
+=== LeadBlaze Chat ===
+Contributors: leadblaze
 Tags: chatbot, chat, widget, customer support, ai, live chat
 Requires at least: 5.0
 Tested up to: 6.4
@@ -12,7 +12,7 @@ Embeddable chatbot widget for WordPress sites. Lightweight, responsive, and easy
 
 == Description ==
 
-The Chatbot Widget plugin allows you to easily add an AI-powered chat interface to your WordPress site. Perfect for customer support, lead generation, and user engagement.
+The LeadBlaze Chat plugin allows you to easily add an AI-powered chat interface to your WordPress site. Perfect for customer support, lead generation, and user engagement.
 
 = Features =
 
@@ -20,7 +20,6 @@ The Chatbot Widget plugin allows you to easily add an AI-powered chat interface 
 * **Fully Responsive**: Works seamlessly on desktop and mobile
 * **Multiple Display Modes**: Floating widget or embedded via shortcode
 * **Customizable Themes**: Light, dark, or auto (system preference)
-* **Multi-language Support**: 10+ languages included
 * **Flexible Positioning**: Place the widget anywhere on your site
 * **Page-specific Display**: Show on all pages, home only, or specific pages
 * **Shadow DOM Isolation**: Prevents CSS conflicts with your theme
@@ -37,7 +36,7 @@ Place the chatbot anywhere in your content:
 `[chatbot_widget]`
 
 With custom parameters:
-`[chatbot_widget height="500px" width="400px" theme="dark" locale="es"]`
+`[chatbot_widget height="500px" width="400px" theme="dark"]`
 
 **PHP Template Tag**
 For theme developers:
@@ -47,13 +46,13 @@ For theme developers:
 
 * WordPress 5.0 or higher
 * PHP 7.2 or higher
-* Valid site key from chatbot service provider
+* Valid site key from LeadBlaze
 
 == Installation ==
 
 1. Upload the `chatbot-widget` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Go to Settings > Chatbot Widget to configure your settings
+3. Go to Settings > LeadBlaze Chat to configure your settings
 4. Enter your site key and customize the appearance
 5. Choose whether to use floating mode or place via shortcode
 
@@ -69,7 +68,7 @@ For theme developers:
 
 = How do I get a site key? =
 
-Contact your chatbot service provider to obtain a site key for your domain.
+Contact LeadBlaze support to obtain a site key for your domain.
 
 = Can I customize the widget appearance? =
 
@@ -87,9 +86,6 @@ Absolutely! The widget is fully responsive and adapts to all screen sizes.
 
 Yes, you can configure it to show on all pages, home page only, or specific pages by ID.
 
-= Does it support multiple languages? =
-
-Yes, the widget supports 10+ languages including English, Spanish, French, German, and more.
 
 = Will it slow down my site? =
 
@@ -115,17 +111,16 @@ Yes, you can use multiple shortcodes with different configurations on the same p
 * WordPress admin interface
 * Shortcode support
 * Floating widget mode
-* Multi-language support
 * Light/dark themes
 
 == Upgrade Notice ==
 
 = 1.0.0 =
-Initial release of the Chatbot Widget plugin.
+Initial release of the LeadBlaze Chat plugin.
 
 == Privacy Policy ==
 
-This plugin communicates with an external chatbot service at https://chatbotbackend.com. Data transmitted includes:
+This plugin communicates with an external chatbot service at https://leadblaze.ai. Data transmitted includes:
 * User messages
 * Session identifiers
 * Client identifiers (if configured)
@@ -135,7 +130,7 @@ Please ensure you have appropriate privacy policies in place and user consent wh
 
 == Support ==
 
-For support, feature requests, or bug reports, please visit our support forum or contact us at support@chatbotbackend.com
+For support, feature requests, or bug reports, please visit our support forum or contact us at support@leadblaze.ai
 
 == Developer Resources ==
 
