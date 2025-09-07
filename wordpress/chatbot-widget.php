@@ -41,12 +41,18 @@ class ChatbotWidget {
     }
 
     private function init_hooks() {
+        // Load translations
+        add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('chatbot_widget', array($this, 'render_shortcode'));
         add_action('wp_footer', array($this, 'maybe_render_floating'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+    }
+
+    public function load_textdomain() {
+        load_plugin_textdomain('chatbot-widget', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
 
     private function maybe_upgrade() {
@@ -232,32 +238,7 @@ class ChatbotWidget {
         );
     }
 
-    private function get_or_create_session_id() {
-        // Check if session can be started safely
-        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
-            session_start();
-        }
-        
-        // Use WordPress transients as fallback if sessions aren't available
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            if (!isset($_SESSION['chatbot_session_id'])) {
-                $_SESSION['chatbot_session_id'] = wp_generate_uuid4();
-            }
-            return $_SESSION['chatbot_session_id'];
-        } else {
-            // Fallback to user-specific transient
-            $user_id = get_current_user_id();
-            $transient_key = 'chatbot_session_' . ($user_id ?: 'anon_' . $_SERVER['REMOTE_ADDR']);
-            $session_id = get_transient($transient_key);
-            
-            if (!$session_id) {
-                $session_id = wp_generate_uuid4();
-                set_transient($transient_key, $session_id, DAY_IN_SECONDS);
-            }
-            
-            return $session_id;
-        }
-    }
+    // Note: No PHP sessions are used; session handling is managed client-side by the widget.
 
     private function get_history_injection_script($greeting_message = '') {
         return "

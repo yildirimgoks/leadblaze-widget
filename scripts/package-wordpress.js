@@ -55,6 +55,15 @@ async function packageWordPress() {
         path.join(pluginDir, 'readme.txt')
     );
     
+    // Copy uninstall script
+    const uninstallSrc = path.join(wpDir, 'uninstall.php');
+    if (fs.existsSync(uninstallSrc)) {
+        fs.copyFileSync(
+            uninstallSrc,
+            path.join(pluginDir, 'uninstall.php')
+        );
+    }
+    
     // Copy the built widget JavaScript
     const widgetJs = path.join(distDir, 'chatbot-widget.js');
     if (fs.existsSync(widgetJs)) {
