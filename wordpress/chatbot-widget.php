@@ -359,7 +359,6 @@ class ChatbotWidget {
                         }
                     })
                     .catch(function(error){
-                        console.error('WordPress: Failed to fetch conversation history:', error);
                         if (greeting) {
                             instance.injectHistory([{ sender: 'ai', content: greeting }]);
                         }
