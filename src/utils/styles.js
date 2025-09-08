@@ -386,6 +386,25 @@ const styles = `
   pointer-events: none;
 }
 
+/* Mobile/tablet responsive adjustments */
+@media (max-width: 768px) {
+  /* Only apply dynamic viewport height when explicitly enabled via class */
+  .chatbot-widget.chatbot-widget--vvh {
+    height: var(--vvh, 100dvh);
+    min-height: var(--vvh, 100dvh);
+  }
+
+  .chatbot-widget__messages {
+    /* Reserve room so latest messages aren’t obscured */
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .chat-input {
+    /* Respect safe area when keyboard/home indicator present */
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  }
+}
+
 @keyframes messageEnter {
   to {
     opacity: 1;

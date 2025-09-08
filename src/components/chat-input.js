@@ -60,24 +60,46 @@ export class ChatInput {
       containerClick: (e) => {
         // Don't interfere if user clicks the send button
         if (!e.target.closest('.chat-input__send')) {
-          textarea.focus();
+          // On desktop, prevent scroll when focusing via container click
+          if (!this.isMobileLike()) {
+            try {
+              textarea.focus({ preventScroll: true });
+            } catch (err) {
+              textarea.focus();
+            }
+          } else {
+            textarea.focus();
+          }
         }
       },
       focus: () => {
         // Small delay to ensure keyboard animation has started
         setTimeout(() => {
-          if (textarea && textarea.scrollIntoView) {
+          // Only auto-scroll on mobile/tablet form factors
+          if (this.isMobileLike() && textarea && textarea.scrollIntoView) {
             textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
           }
         }, 100);
       }
     };
-    
+
     // Auto-resize textarea
     textarea.addEventListener('input', this.handlers.input);
-    
+
     // Handle keyboard shortcuts
     textarea.addEventListener('keydown', this.handlers.keydown);
+
+    // Desktop-only: prevent default mouse focus scroll and apply preventScroll focus
+    textarea.addEventListener('mousedown', (e) => {
+      if (!this.isMobileLike()) {
+        e.preventDefault();
+        try {
+          textarea.focus({ preventScroll: true });
+        } catch (err) {
+          textarea.focus();
+        }
+      }
+    });
     
     // Handle form submission
     form.addEventListener('submit', this.handlers.submit);
@@ -138,7 +160,17 @@ export class ChatInput {
 
   focus() {
     const textarea = this.getTextarea();
-    textarea.focus();
+    if (!textarea) return;
+    // On desktop, focus without scrolling the page
+    if (!this.isMobileLike()) {
+      try {
+        textarea.focus({ preventScroll: true });
+      } catch (err) {
+        textarea.focus();
+      }
+    } else {
+      textarea.focus();
+    }
   }
 
   getTextarea() {
@@ -164,6 +196,22 @@ export class ChatInput {
 
   getElement() {
     return this.element;
+  }
+
+  // Helper to detect mobile/tablet where auto-scroll-on-focus is desirable
+  isMobileLike() {
+    try {
+      return (
+        window.matchMedia && (
+          window.matchMedia('(pointer: coarse)').matches ||
+          window.matchMedia('(max-width: 768px)').matches
+        )
+      );
+    } catch (e) {
+      // Fallback to user agent heuristic only if matchMedia fails
+      const ua = navigator.userAgent || '';
+      return /Mobi|Android|iPad|iPhone|iPod/i.test(ua);
+    }
   }
 
   destroy() {

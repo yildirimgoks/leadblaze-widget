@@ -23,8 +23,10 @@ export class ChatUI {
       this.container.classList.add('chatbot-widget--visible');
     });
     
-    // Focus input after initialization
-    setTimeout(() => this.chatInput.focus(), 100);
+    // Do not auto-focus the input on initialization to avoid page auto-scroll
+
+    // Setup mobile viewport/keyboard behavior
+    this.setupMobileViewportHandlers();
     
     // Show greeting if no history will be injected
     if (!config.skipGreeting) {
@@ -46,7 +48,7 @@ export class ChatUI {
     const isFloating = this.config.container && this.config.container === '#chatbot-widget-container';
     
     header.innerHTML = `
-      <h2 class="chatbot-widget__title">Chat Support</h2>
+      <h2 class="chatbot-widget__title">Contact us</h2>
       ${isFloating ? `
         <button class="chatbot-widget__collapse-btn" title="Minimize" aria-label="Minimize chat">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -163,6 +165,80 @@ export class ChatUI {
     );
     
     this.intersectionObserver.observe(sentinel);
+  }
+
+  setupMobileViewportHandlers() {
+    const textarea = this.chatInput && this.chatInput.getTextarea ? this.chatInput.getTextarea() : null;
+    if (!textarea) return;
+
+    // Track visual viewport changes while the input is focused on mobile/tablet
+    this._vvHandlers = {
+      onFocus: () => {
+        if (!this.isMobileLike()) return;
+        this.enableViewportTracking();
+        // Ensure latest messages are visible when keyboard opens
+        this.scrollToBottom();
+        // Run again after keyboard animation
+        setTimeout(() => this.scrollToBottom(), 250);
+      },
+      onBlur: () => {
+        if (!this.isMobileLike()) return;
+        this.disableViewportTracking();
+      }
+    };
+
+    textarea.addEventListener('focus', this._vvHandlers.onFocus);
+    textarea.addEventListener('blur', this._vvHandlers.onBlur);
+  }
+
+  enableViewportTracking() {
+    const vv = window.visualViewport;
+    const apply = () => {
+      const h = vv && vv.height ? vv.height : window.innerHeight;
+      // Constrain to positive values
+      const height = Math.max(320, Math.floor(h));
+      this.container.style.setProperty('--vvh', height + 'px');
+    };
+    // Save listeners so we can remove them
+    this._vvApply = apply;
+    // Add class to enable CSS that uses --vvh
+    this.container.classList.add('chatbot-widget--vvh');
+    apply();
+    if (vv) {
+      vv.addEventListener('resize', apply);
+      vv.addEventListener('scroll', apply);
+    } else {
+      // Fallback: listen to window resize
+      window.addEventListener('resize', apply);
+    }
+  }
+
+  disableViewportTracking() {
+    const vv = window.visualViewport;
+    if (this._vvApply) {
+      if (vv) {
+        vv.removeEventListener('resize', this._vvApply);
+        vv.removeEventListener('scroll', this._vvApply);
+      } else {
+        window.removeEventListener('resize', this._vvApply);
+      }
+    }
+    this._vvApply = null;
+    // Clear custom height so layout returns to normal
+    this.container.style.removeProperty('--vvh');
+    this.container.classList.remove('chatbot-widget--vvh');
+  }
+
+  isMobileLike() {
+    try {
+      return (
+        (window.matchMedia && window.matchMedia('(pointer: coarse)').matches) ||
+        (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
+      );
+    } catch (e) {
+      const ua = navigator.userAgent || '';
+      return /Mobi|Android|iPad|iPhone|iPod/i.test(ua);
+    }
   }
 
   async sendMessage(messageText) {
@@ -529,6 +605,16 @@ export class ChatUI {
   }
 
   destroy() {
+    // Clean up mobile viewport handlers
+    try {
+      this.disableViewportTracking();
+    } catch (e) {}
+    const textarea = this.chatInput && this.chatInput.getTextarea ? this.chatInput.getTextarea() : null;
+    if (textarea && this._vvHandlers) {
+      textarea.removeEventListener('focus', this._vvHandlers.onFocus);
+      textarea.removeEventListener('blur', this._vvHandlers.onBlur);
+    }
+
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
     }
