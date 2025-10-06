@@ -300,6 +300,7 @@ const styles = `
   display: flex;
   gap: 0.5rem;
   align-items: flex-end;
+  cursor: pointer;
 }
 
 .chat-input__textarea {
@@ -315,6 +316,7 @@ const styles = `
   font-size: 14px;
   line-height: 1.4;
   resize: none;
+  cursor: text;
   transition: border-color var(--transition-fast);
 }
 
