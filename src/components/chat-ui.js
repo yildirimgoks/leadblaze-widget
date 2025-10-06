@@ -175,6 +175,11 @@ export class ChatUI {
     this._vvHandlers = {
       onFocus: () => {
         if (!this.isMobileLike()) return;
+        // Clear any pending blur timeout
+        if (this._blurTimeout) {
+          clearTimeout(this._blurTimeout);
+          this._blurTimeout = null;
+        }
         this.enableViewportTracking();
         // Ensure latest messages are visible when keyboard opens
         this.scrollToBottom();
@@ -183,7 +188,13 @@ export class ChatUI {
       },
       onBlur: () => {
         if (!this.isMobileLike()) return;
-        this.disableViewportTracking();
+        // Don't disable viewport tracking immediately on blur
+        // User might be tapping outside the input temporarily (e.g., scrolling)
+        // Only disable after a delay to confirm keyboard is actually closing
+        this._blurTimeout = setTimeout(() => {
+          this.disableViewportTracking();
+          this._blurTimeout = null;
+        }, 300);
       }
     };
 
@@ -609,6 +620,13 @@ export class ChatUI {
     try {
       this.disableViewportTracking();
     } catch (e) {}
+
+    // Clear any pending blur timeout
+    if (this._blurTimeout) {
+      clearTimeout(this._blurTimeout);
+      this._blurTimeout = null;
+    }
+
     const textarea = this.chatInput && this.chatInput.getTextarea ? this.chatInput.getTextarea() : null;
     if (textarea && this._vvHandlers) {
       textarea.removeEventListener('focus', this._vvHandlers.onFocus);
@@ -618,12 +636,12 @@ export class ChatUI {
     if (this.intersectionObserver) {
       this.intersectionObserver.disconnect();
     }
-    
+
     // Properly destroy chat input before nullifying
     if (this.chatInput && typeof this.chatInput.destroy === 'function') {
       this.chatInput.destroy();
     }
-    
+
     // Clean up references
     this.chatInput = null;
     this.messages = [];
