@@ -42,12 +42,16 @@ export class ChatAPI {
       }
 
       const data = await response.json();
-      
+
       if (!data || typeof data.content !== 'string') {
         throw new Error('Invalid response format from server');
       }
 
-      return data;
+      // Return the full response including lead_saved if present
+      return {
+        content: data.content,
+        lead_saved: data.lead_saved || false
+      };
     } catch (error) {
       if (attempt < this.maxRetries && this.isRetryableError(error)) {
         const delay = this.calculateDelay(attempt);

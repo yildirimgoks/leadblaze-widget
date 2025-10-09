@@ -276,10 +276,15 @@ export class ChatUI {
       
       // Send to API (backend handles persistence)
       const response = await this.chatAPI.sendMessage(messageText);
-      
+
       // Update the loading message with actual content
       loadingBotMessage.updateContent(response.content);
-      
+
+      // Dispatch custom event if lead was saved
+      if (response.lead_saved === true) {
+        this.dispatchLeadSavedEvent();
+      }
+
       // That's it! Backend handles all persistence, no client-side saving needed
       
     } catch (error) {
@@ -571,29 +576,29 @@ export class ChatUI {
     // Check if state was already determined by the inline script
     if (window.__chatbotInitialState) {
       const presetState = window.__chatbotInitialState;
-      
+
       // The state has already been applied via inline script
       // We just need to ensure our internal state tracking is correct
       // and save if needed
-      
+
       // Save the state if it wasn't already stored
       const storedState = this.getStoredWidgetState();
       if (!storedState && presetState) {
         this.saveWidgetState(presetState);
       }
-      
+
       // Clean up the global variable
       delete window.__chatbotInitialState;
       return;
     }
-    
+
     // Fallback for non-WordPress implementations or if something went wrong
     const storedState = this.getStoredWidgetState();
     const defaultState = this.config.floatingDefaultState || 'expanded';
-    
+
     // Prioritize stored state over default state
     const finalState = storedState || defaultState;
-    
+
     // Apply immediately without delay
     switch (finalState) {
       case 'collapsed':
@@ -607,12 +612,29 @@ export class ChatUI {
         this.expandWidget(false); // Don't save state during initialization
         break;
     }
-    
+
     // Save the initial state only if there was no stored state
     // This ensures first-time visitors get the default state saved
     if (!storedState) {
       this.saveWidgetState(finalState);
     }
+  }
+
+  dispatchLeadSavedEvent() {
+    // Dispatch custom event on the window object
+    const event = new CustomEvent('leadblaze:lead_saved', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        timestamp: new Date().toISOString(),
+        sessionId: this.config.sessionId,
+        clientId: this.config.clientId
+      }
+    });
+
+    // Dispatch on window for easy listening by host page
+    window.dispatchEvent(event);
+    console.log('ChatbotWidget: leadblaze:lead_saved event dispatched');
   }
 
   destroy() {
