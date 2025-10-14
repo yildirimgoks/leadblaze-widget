@@ -43,10 +43,11 @@ export class ChatUI {
     // Header
     const header = document.createElement('div');
     header.className = 'chatbot-widget__header';
-    
-    // Check if this is a floating widget
-    const isFloating = this.config.container && this.config.container === '#chatbot-widget-container';
-    
+
+    // Check if this is a floating widget using the isFloating flag
+    const isFloating = this.config.isFloating === true;
+    console.log('ChatUI: isFloating =', isFloating, 'config.isFloating =', this.config.isFloating);
+
     header.innerHTML = `
       <h2 class="chatbot-widget__title">Contact us</h2>
       ${isFloating ? `
@@ -209,6 +210,9 @@ export class ChatUI {
       // Constrain to positive values
       const height = Math.max(320, Math.floor(h));
       this.container.style.setProperty('--vvh', height + 'px');
+      // Keep the latest messages visible as the keyboard animates
+      // Only do this when we are tracking viewport (i.e., input is focused)
+      try { this.scrollToBottom(); } catch (_) {}
     };
     // Save listeners so we can remove them
     this._vvApply = apply;
@@ -485,26 +489,36 @@ export class ChatUI {
     // Setup collapse functionality
     const collapseBtn = this.container.querySelector('.chatbot-widget__collapse-btn');
     if (collapseBtn) {
-      collapseBtn.addEventListener('click', () => this.collapseWidget());
+      collapseBtn.addEventListener('click', () => {
+        // Call the onCollapse callback if provided (for standalone floating widget)
+        if (this.config.onCollapse && typeof this.config.onCollapse === 'function') {
+          this.config.onCollapse();
+        } else {
+          // Fallback for WordPress plugin compatibility
+          this.collapseWidget();
+        }
+      });
     }
 
-    // Setup collapsed button functionality
+    // Setup collapsed button functionality (for WordPress plugin)
     const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
     if (collapsedContainer) {
       const expandBtn = collapsedContainer.querySelector('.chatbot-collapsed-button');
       const closeBtn = collapsedContainer.querySelector('.chatbot-close-button');
-      
+
       if (expandBtn) {
         expandBtn.addEventListener('click', () => this.expandWidget());
       }
-      
+
       if (closeBtn) {
         closeBtn.addEventListener('click', () => this.closeWidget());
       }
     }
 
-    // Handle initial state with persistence
-    this.applyStoredState();
+    // Handle initial state with persistence (only for WordPress plugin)
+    if (!this.config.onCollapse) {
+      this.applyStoredState();
+    }
   }
 
   collapseWidget(saveState = true) {

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floating Chatbot Widget Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .demo-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .demo-header h1 {
+            font-size: 48px;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .demo-header p {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .feature-card h3 {
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            font-size: 16px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 40px;
+        }
+
+        .demo-section h2 {
+            font-size: 32px;
+            margin-bottom: 24px;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 24px;
+            overflow-x: auto;
+            margin-bottom: 24px;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .info-box h4 {
+            margin-top: 0;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .demo-header h1 {
+                font-size: 36px;
+            }
+
+            .demo-section {
+                padding: 24px;
+            }
+
+            .code-block {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <header class="demo-header">
+            <h1>🚀 Floating Chatbot Widget</h1>
+            <p>A beautiful, responsive floating chat button for your website</p>
+        </header>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>💬 Always Accessible</h3>
+                <p>A floating button that stays visible as users scroll, making chat always available.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎨 Fully Customizable</h3>
+                <p>Choose position, theme, colors, and more to match your brand perfectly.</p>
+            </div>
+            <div class="feature-card">
+                <h3>💾 Persistent State</h3>
+                <p>Remembers if users collapsed or closed the chat, respecting their preferences.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📱 Mobile Optimized</h3>
+                <p>Responsive design that works seamlessly on all devices and screen sizes.</p>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📚 Quick Start Guide</h2>
+
+            <div class="info-box">
+                <h4>Installation</h4>
+                <p>Add this script tag to your website, right before the closing &lt;/body&gt; tag:</p>
+            </div>
+
+            <div class="code-block">
+                <pre>&lt;!-- Include the floating widget script with your site key --&gt;
+&lt;script src="https://cdn.yoursite.com/chatbot-widget-floating.js"
+        site-key="your-site-key"
+        async&gt;&lt;/script&gt;
+
+&lt;!-- Initialize the widget --&gt;
+&lt;script&gt;
+  ChatbotWidget.init({
+    clientId: "your-client-id",
+    theme: "#eb4034",           // Optional: custom color
+    themeMode: "light",         // Optional: "light" or "dark"
+    position: "bottom-right",   // Optional: position of the button
+    floatingDefaultState: "expanded",  // Optional: "expanded", "collapsed", or "closed"
+    greetingMessage: "Hi! How can I help you today?"  // Optional: custom greeting
+  });
+&lt;/script&gt;</pre>
+            </div>
+
+            <h3>Configuration Options</h3>
+
+            <div class="code-block">
+                <pre>ChatbotWidget.init({
+  // Required
+  clientId: "your-client-id",        // Your unique client identifier
+
+  // Optional - Appearance
+  theme: "#eb4034",                  // Hex color for theme
+  themeMode: "light",                // "light" or "dark" mode
+  position: "bottom-right",          // "bottom-right", "bottom-left", "top-right", "top-left"
+
+  // Optional - Behavior
+  floatingDefaultState: "expanded",  // "expanded", "collapsed", or "closed"
+  greetingMessage: "Hi there!",      // Custom greeting message
+
+  // Optional - Advanced
+  sessionId: "uuid-v4",              // Auto-generated if not provided
+  locale: "en",                      // ISO 639-1 language code
+  apiEndpoint: "https://...",        // Custom API endpoint
+});</pre>
+            </div>
+
+            <h3>Position Options</h3>
+            <p>Control where the floating button appears on your page:</p>
+            <ul>
+                <li><strong>bottom-right</strong> - Default, appears in bottom right corner</li>
+                <li><strong>bottom-left</strong> - Bottom left corner</li>
+                <li><strong>top-right</strong> - Top right corner</li>
+                <li><strong>top-left</strong> - Top left corner</li>
+            </ul>
+
+            <h3>Default State Options</h3>
+            <p>Choose how the widget appears initially:</p>
+            <ul>
+                <li><strong>expanded</strong> - Chat widget is open and visible (default)</li>
+                <li><strong>collapsed</strong> - Shows only the floating button</li>
+                <li><strong>closed</strong> - Hidden until user interacts</li>
+            </ul>
+
+            <div class="controls">
+                <button class="btn" onclick="testExpandedState()">Test Expanded State</button>
+                <button class="btn" onclick="testCollapsedState()">Test Collapsed State</button>
+                <button class="btn secondary" onclick="testSendMessage()">Send Test Message</button>
+                <button class="btn secondary" onclick="destroyWidget()">Destroy Widget</button>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🎯 Features</h2>
+
+            <h3>Persistent State Management</h3>
+            <p>The widget automatically remembers the user's last interaction. If they collapse or close the chat, it will remain in that state when they return to your site.</p>
+
+            <h3>Smooth Animations</h3>
+            <p>Beautiful transitions when expanding, collapsing, or closing the chat provide a polished user experience.</p>
+
+            <h3>Accessible Design</h3>
+            <p>Built with accessibility in mind, including proper ARIA labels, keyboard navigation, and screen reader support.</p>
+
+            <h3>Small Bundle Size</h3>
+            <p>Optimized for performance with a gzipped bundle size under 25KB.</p>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔧 API Methods</h2>
+
+            <div class="code-block">
+                <pre>// Initialize the widget
+ChatbotWidget.init(config);
+
+// Send a message programmatically
+ChatbotWidget.send("Hello, how are you?");
+
+// Destroy the widget
+ChatbotWidget.unmount();
+
+// Get the widget instance (advanced)
+const instance = ChatbotWidget.getInstance();
+
+// Get the underlying chat widget
+const chatWidget = ChatbotWidget.getChatWidget();</pre>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>💡 Tips</h2>
+            <ul>
+                <li>The widget works great on both desktop and mobile devices</li>
+                <li>User preferences (collapsed/expanded state) are saved in localStorage</li>
+                <li>The minimize button allows users to collapse the chat without closing it</li>
+                <li>The close button (X) on the floating button completely hides the widget</li>
+                <li>Try different positions to see what works best for your layout</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Load the floating widget script -->
+    <script src="dist/chatbot-widget-floating.js" site-key="demo-site-key"></script>
+
+    <script>
+        // Mock API responses for demo
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url.includes('leadgate-backend-production.up.railway.app/chat')) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const responses = [
+                            "Hello! How can I help you today?",
+                            "I'm here to assist you with any questions you might have.",
+                            "Thanks for reaching out! What would you like to know?",
+                            "I understand you need help. What specific information are you looking for?",
+                            "Great question! Let me provide you with some helpful information.",
+                            "I'd be happy to help you with that!",
+                        ];
+
+                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+                        resolve({
+                            ok: true,
+                            json: () => Promise.resolve({
+                                body: randomResponse
+                            })
+                        });
+                    }, 1000 + Math.random() * 2000);
+                });
+            }
+            return originalFetch.apply(this, arguments);
+        };
+
+        // Initialize with expanded state by default
+        let currentWidget = null;
+
+        function testExpandedState() {
+            if (currentWidget) {
+                ChatbotWidget.unmount();
+            }
+
+            ChatbotWidget.init({
+                clientId: "floating-demo-expanded",
+                theme: "#eb4034",
+                themeMode: "light",
+                locale: "en",
+                position: "bottom-right",
+                floatingDefaultState: "expanded",
+                greetingMessage: "Welcome! I'm here to help you."
+            });
+
+            currentWidget = 'expanded';
+            alert('Widget initialized in EXPANDED state!');
+        }
+
+        function testCollapsedState() {
+            if (currentWidget) {
+                ChatbotWidget.unmount();
+            }
+
+            // Clear saved state first
+            try {
+                const siteKey = 'demo-site-key';
+                const domain = window.location.hostname;
+                const stateKey = `chatbot-widget-state-${siteKey}-${domain}`;
+                localStorage.removeItem(stateKey);
+            } catch (e) {}
+
+            ChatbotWidget.init({
+                clientId: "floating-demo-collapsed",
+                theme: "#9c27b0",
+                themeMode: "light",
+                locale: "en",
+                position: "bottom-right",
+                floatingDefaultState: "collapsed",
+                greetingMessage: "Hi there! Ready to chat?"
+            });
+
+            currentWidget = 'collapsed';
+            alert('Widget initialized in COLLAPSED state! Click the floating button to expand.');
+        }
+
+        function testSendMessage() {
+            if (!currentWidget) {
+                alert('Please initialize the widget first!');
+                return;
+            }
+
+            try {
+                const messages = [
+                    "Hello there!",
+                    "Can you help me with something?",
+                    "What services do you offer?",
+                    "I have a question about your product.",
+                    "This is a test message."
+                ];
+
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                ChatbotWidget.send(randomMessage);
+                console.log('Message sent:', randomMessage);
+            } catch (error) {
+                alert('Error sending message: ' + error.message);
+            }
+        }
+
+        function destroyWidget() {
+            try {
+                ChatbotWidget.unmount();
+                currentWidget = null;
+                alert('Widget destroyed successfully!');
+            } catch (error) {
+                alert('Error destroying widget: ' + error.message);
+            }
+        }
+
+        // Auto-initialize on page load with expanded state
+        window.addEventListener('load', () => {
+            console.log('Demo page loaded, ChatbotWidget available:', typeof ChatbotWidget);
+
+            // Auto-initialize in expanded state
+            setTimeout(() => {
+                testExpandedState();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

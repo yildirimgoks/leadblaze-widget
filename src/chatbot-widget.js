@@ -107,8 +107,14 @@ export class ChatbotWidget {
       themeMode: config.themeMode, // Optional: 'light' or 'dark' for custom themes
       locale: config.locale || 'en',
       apiEndpoint: config.apiEndpoint || 'https://leadgate-backend-production.up.railway.app/chat',
-      greetingMessage: config.greetingMessage || 'Hi, I how can I help you?',
-      siteKey: config.siteKey
+      greetingMessage: config.greetingMessage || 'Hi, how can I help you?',
+      siteKey: config.siteKey,
+      // Floating-specific flags need to be preserved for UI behavior
+      isFloating: config.isFloating === true,
+      onCollapse: typeof config.onCollapse === 'function' ? config.onCollapse : undefined,
+      floatingDefaultState: config.floatingDefaultState,
+      // Preserve skipGreeting if set upstream
+      skipGreeting: !!config.skipGreeting
     };
   }
 

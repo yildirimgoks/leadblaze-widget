@@ -32,7 +32,11 @@ function getCurrentScriptSiteKey() {
 // Store multiple widget instances by container
 const widgets = new Map();
 
-window.ChatbotWidget = {
+// Check if ChatbotWidget already exists (floating widget loaded first)
+const existingChatbotWidget = window.ChatbotWidget;
+
+// Create or extend the ChatbotWidget namespace
+const ChatbotWidgetAPI = {
   init: (config) => {
     // Use siteKey from config if provided, otherwise try to extract from script tag
     const scriptSiteKey = getCurrentScriptSiteKey();
@@ -98,3 +102,16 @@ window.ChatbotWidget = {
     return widgets.get(container) || null;
   }
 };
+
+// Preserve existing floating widget methods if they exist
+if (existingChatbotWidget) {
+  // Merge with existing methods
+  Object.keys(existingChatbotWidget).forEach(key => {
+    if (!ChatbotWidgetAPI[key]) {
+      ChatbotWidgetAPI[key] = existingChatbotWidget[key];
+    }
+  });
+}
+
+// Export unified API
+window.ChatbotWidget = ChatbotWidgetAPI;

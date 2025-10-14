@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Both Widgets Demo - Embedded + Floating</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .hero {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    .subtitle {
+      color: #666;
+      margin: 0 0 20px 0;
+    }
+    .info-box {
+      background: #e3f2fd;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .info-box h3 {
+      margin: 0 0 10px 0;
+      color: #1976D2;
+    }
+    .chat-section {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .chat-section h2 {
+      margin: 0 0 15px 0;
+      color: #333;
+    }
+    #embedded-chat {
+      width: 100%;
+      height: 600px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .test-buttons {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      background: #2196F3;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    button.secondary {
+      background: #757575;
+    }
+    button.secondary:hover {
+      background: #616161;
+    }
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .floating-info {
+      background: #fff3e0;
+      border-left: 4px solid #ff9800;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .floating-info h3 {
+      margin: 0 0 10px 0;
+      color: #f57c00;
+    }
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>Both Widgets Demo</h1>
+    <p class="subtitle">Testing embedded + floating widgets on the same page</p>
+
+    <div class="info-box">
+      <h3>What's on this page:</h3>
+      <ul>
+        <li><strong>Embedded Widget</strong>: In the container below (fixed position on page)</li>
+        <li><strong>Floating Widget</strong>: Bottom-right corner (follows you while scrolling)</li>
+        <li>Both widgets load independently without conflicts</li>
+        <li>Each maintains its own state, history, and session</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="chat-section">
+    <h2>Embedded Widget</h2>
+    <p>This widget is embedded in a specific container on the page:</p>
+
+    <!-- Embedded widget container -->
+    <div id="embedded-chat"></div>
+
+    <div class="test-buttons">
+      <button onclick="sendToEmbedded()">Send to Embedded</button>
+      <button onclick="getEmbeddedInstance()">Get Embedded Instance</button>
+      <button onclick="unmountEmbedded()" class="secondary">Unmount Embedded</button>
+      <button onclick="remountEmbedded()" class="secondary">Remount Embedded</button>
+    </div>
+
+    <div class="status" id="embedded-status">Ready. Click buttons above to test embedded widget API.</div>
+  </div>
+
+  <div class="chat-section">
+    <div class="floating-info">
+      <h3>Floating Widget</h3>
+      <p><strong>Look at the bottom-right corner!</strong> The floating widget should be visible there. It can be minimized, expanded, or closed using the buttons on it.</p>
+      <p>You can also control it programmatically using the buttons below:</p>
+    </div>
+
+    <div class="test-buttons">
+      <button onclick="sendToFloating()">Send to Floating</button>
+      <button onclick="getFloatingInstance()">Get Floating Instance</button>
+      <button onclick="unmountFloating()" class="secondary">Unmount Floating</button>
+      <button onclick="remountFloating()" class="secondary">Remount Floating</button>
+    </div>
+
+    <div class="status" id="floating-status">Ready. Click buttons above to test floating widget API.</div>
+  </div>
+
+  <!-- Load both widget scripts - order doesn't matter! -->
+  <script src="dist/chatbot-widget.js" site-key="test-site-key-123" async></script>
+  <script src="dist/chatbot-widget-floating.js" site-key="test-site-key-123" async></script>
+
+  <!-- Initialize both widgets -->
+  <script>
+    // Wait for scripts to load
+    window.addEventListener('load', function() {
+      console.log('=== Initializing Both Widgets ===');
+      console.log('window.ChatbotWidget:', window.ChatbotWidget);
+
+      // Initialize embedded widget
+      console.log('Initializing embedded widget...');
+      ChatbotWidget.init({
+        clientId: "demo-client-embedded",
+        container: "#embedded-chat",
+        theme: "#2196F3",
+        themeMode: "light",
+        greetingMessage: "👋 Hi! I'm the embedded widget. How can I help you?"
+      });
+
+      // Initialize floating widget
+      console.log('Initializing floating widget...');
+      ChatbotWidget.init({
+        clientId: "demo-client-floating",
+        theme: "#ff9800",
+        themeMode: "light",
+        position: "bottom-right",
+        floatingDefaultState: "collapsed",
+        greetingMessage: "👋 Hi! I'm the floating widget. How can I help you?"
+      });
+
+      console.log('Both widgets initialized!');
+      console.log('Available methods:', Object.keys(window.ChatbotWidget));
+    });
+
+    // Test functions for embedded widget
+    function sendToEmbedded() {
+      try {
+        ChatbotWidget.send("Hello from test button!", "#embedded-chat");
+        updateStatus('embedded', 'Message sent to embedded widget');
+      } catch (e) {
+        updateStatus('embedded', 'Error: ' + e.message);
+      }
+    }
+
+    function getEmbeddedInstance() {
+      try {
+        const instance = ChatbotWidget.getInstance("#embedded-chat");
+        updateStatus('embedded', 'Embedded instance: ' + JSON.stringify({
+          exists: !!instance,
+          type: instance ? instance.constructor.name : null
+        }, null, 2));
+      } catch (e) {
+        updateStatus('embedded', 'Error: ' + e.message);
+      }
+    }
+
+    function unmountEmbedded() {
+      try {
+        ChatbotWidget.unmount("#embedded-chat");
+        updateStatus('embedded', 'Embedded widget unmounted');
+      } catch (e) {
+        updateStatus('embedded', 'Error: ' + e.message);
+      }
+    }
+
+    function remountEmbedded() {
+      try {
+        ChatbotWidget.init({
+          clientId: "demo-client-embedded",
+          container: "#embedded-chat",
+          theme: "#2196F3",
+          themeMode: "light",
+          greetingMessage: "👋 I'm back! The embedded widget has been remounted."
+        });
+        updateStatus('embedded', 'Embedded widget remounted');
+      } catch (e) {
+        updateStatus('embedded', 'Error: ' + e.message);
+      }
+    }
+
+    // Test functions for floating widget
+    function sendToFloating() {
+      try {
+        // Use generic send (will go to floating if no container specified)
+        ChatbotWidget.send("Hello from test button!");
+        updateStatus('floating', 'Message sent to floating widget');
+      } catch (e) {
+        updateStatus('floating', 'Error: ' + e.message);
+      }
+    }
+
+    function getFloatingInstance() {
+      try {
+        const instance = ChatbotWidget.getFloatingInstance ?
+          ChatbotWidget.getFloatingInstance() :
+          ChatbotWidget.getInstance();
+        updateStatus('floating', 'Floating instance: ' + JSON.stringify({
+          exists: !!instance,
+          type: instance ? instance.constructor.name : null
+        }, null, 2));
+      } catch (e) {
+        updateStatus('floating', 'Error: ' + e.message);
+      }
+    }
+
+    function unmountFloating() {
+      try {
+        if (ChatbotWidget.unmountFloating) {
+          ChatbotWidget.unmountFloating();
+        } else {
+          ChatbotWidget.unmount();
+        }
+        updateStatus('floating', 'Floating widget unmounted');
+      } catch (e) {
+        updateStatus('floating', 'Error: ' + e.message);
+      }
+    }
+
+    function remountFloating() {
+      try {
+        const initMethod = ChatbotWidget.initFloating || ChatbotWidget.init;
+        initMethod({
+          clientId: "demo-client-floating",
+          theme: "#ff9800",
+          themeMode: "light",
+          position: "bottom-right",
+          floatingDefaultState: "expanded",
+          greetingMessage: "👋 I'm back! The floating widget has been remounted."
+        });
+        updateStatus('floating', 'Floating widget remounted');
+      } catch (e) {
+        updateStatus('floating', 'Error: ' + e.message);
+      }
+    }
+
+    // Helper function to update status displays
+    function updateStatus(widget, message) {
+      const statusEl = document.getElementById(widget + '-status');
+      const timestamp = new Date().toLocaleTimeString();
+      statusEl.textContent = `[${timestamp}] ${message}`;
+    }
+
+    // Log API methods on load
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        console.log('=== Available API Methods ===');
+        console.log('ChatbotWidget methods:', Object.keys(window.ChatbotWidget));
+        console.log('Has initFloating?', 'initFloating' in window.ChatbotWidget);
+        console.log('Has sendFloating?', 'sendFloating' in window.ChatbotWidget);
+        console.log('Has getFloatingInstance?', 'getFloatingInstance' in window.ChatbotWidget);
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

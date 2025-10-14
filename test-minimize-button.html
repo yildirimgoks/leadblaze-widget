@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Minimize Button</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .info {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .debug-panel {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-width: 400px;
+      z-index: 9999999;
+    }
+    .debug-panel h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+    }
+    .debug-log {
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .debug-log div {
+      margin: 4px 0;
+      padding: 4px;
+      border-left: 3px solid #2196F3;
+      padding-left: 8px;
+    }
+    .debug-log .error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+    button {
+      padding: 8px 16px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    <h1>Minimize Button Test</h1>
+    <p><strong>What to look for:</strong></p>
+    <ol>
+      <li>Open the floating widget (bottom-right corner)</li>
+      <li>Look for a minimize button in the header (should be a horizontal line icon on the right side)</li>
+      <li>Check the debug panel (top-left) for the <code>isFloating</code> value</li>
+      <li>Open browser DevTools Console for additional debug info</li>
+    </ol>
+
+    <button onclick="inspectWidget()">Inspect Widget Shadow DOM</button>
+    <button onclick="testCollapse()">Test Collapse Function</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+  </div>
+
+  <div class="debug-panel">
+    <h3>Debug Info</h3>
+    <div class="debug-log" id="debug-log">
+      <div>Waiting for widget to initialize...</div>
+    </div>
+  </div>
+
+  <!-- Load floating widget -->
+  <script src="dist/chatbot-widget-floating.js" site-key="test-site-key" async></script>
+
+  <script>
+    const debugLog = document.getElementById('debug-log');
+
+    function log(message, isError = false) {
+      const div = document.createElement('div');
+      if (isError) div.className = 'error';
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      debugLog.appendChild(div);
+      debugLog.scrollTop = debugLog.scrollHeight;
+      console.log(message);
+    }
+
+    function clearLogs() {
+      debugLog.innerHTML = '<div>Logs cleared.</div>';
+    }
+
+    function inspectWidget() {
+      try {
+        const container = document.getElementById('chatbot-widget-container');
+        if (!container) {
+          log('❌ Container not found!', true);
+          return;
+        }
+
+        log('✅ Container found: ' + container.id);
+        log('Container display: ' + container.style.display);
+
+        // Find the shadow host (should be inside the container)
+        const shadowHosts = container.querySelectorAll('*');
+        log('Elements in container: ' + shadowHosts.length);
+
+        for (let elem of shadowHosts) {
+          if (elem.shadowRoot) {
+            log('✅ Found shadow root in: ' + elem.tagName);
+            const header = elem.shadowRoot.querySelector('.chatbot-widget__header');
+            if (header) {
+              log('✅ Found header element');
+              log('Header innerHTML length: ' + header.innerHTML.length);
+
+              const collapseBtn = elem.shadowRoot.querySelector('.chatbot-widget__collapse-btn');
+              if (collapseBtn) {
+                log('✅ MINIMIZE BUTTON FOUND!');
+                log('Button visible: ' + (collapseBtn.offsetWidth > 0 && collapseBtn.offsetHeight > 0));
+                log('Button computed display: ' + window.getComputedStyle(collapseBtn).display);
+              } else {
+                log('❌ MINIMIZE BUTTON NOT FOUND in shadow DOM!', true);
+                log('Header HTML: ' + header.innerHTML.substring(0, 200));
+              }
+            } else {
+              log('❌ Header element not found', true);
+            }
+          }
+        }
+
+        // Check the widget instance
+        const instance = window.ChatbotWidget && window.ChatbotWidget.getFloatingInstance
+          ? window.ChatbotWidget.getFloatingInstance()
+          : null;
+
+        if (instance) {
+          log('✅ Floating widget instance found');
+          const chatWidget = instance.getChatWidget ? instance.getChatWidget() : null;
+          if (chatWidget) {
+            log('✅ Chat widget found');
+            log('isFloating config: ' + (chatWidget.config ? chatWidget.config.isFloating : 'N/A'));
+          }
+        } else {
+          log('❌ No floating widget instance', true);
+        }
+
+      } catch (error) {
+        log('❌ Error: ' + error.message, true);
+      }
+    }
+
+    function testCollapse() {
+      try {
+        if (window.ChatbotWidget && window.ChatbotWidget.getFloatingInstance) {
+          const instance = window.ChatbotWidget.getFloatingInstance();
+          if (instance && instance.handleCollapse) {
+            instance.handleCollapse();
+            log('✅ Collapse function called');
+          } else {
+            log('❌ Collapse function not available', true);
+          }
+        }
+      } catch (error) {
+        log('❌ Error: ' + error.message, true);
+      }
+    }
+
+    // Wait for widget to load
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        log('Page loaded, initializing widget...');
+
+        try {
+          ChatbotWidget.init({
+            clientId: "test-client",
+            theme: "#2196F3",
+            position: "bottom-right",
+            floatingDefaultState: "expanded",
+            greetingMessage: "Test: Check for minimize button in header!"
+          });
+
+          log('✅ Widget init called');
+
+          // Wait a bit then inspect
+          setTimeout(() => {
+            log('Running automatic inspection...');
+            inspectWidget();
+          }, 1000);
+
+        } catch (error) {
+          log('❌ Init error: ' + error.message, true);
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>
