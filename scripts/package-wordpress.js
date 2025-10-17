@@ -28,6 +28,7 @@ async function packageWordPress() {
     fs.mkdirSync(pluginDir, { recursive: true });
     fs.mkdirSync(path.join(pluginDir, 'admin'), { recursive: true });
     fs.mkdirSync(path.join(pluginDir, 'assets'), { recursive: true });
+    fs.mkdirSync(path.join(pluginDir, 'languages'), { recursive: true });
     
     // Copy WordPress plugin files
     console.log('📋 Copying plugin files...');
@@ -43,10 +44,15 @@ async function packageWordPress() {
         path.join(wpDir, 'admin', 'settings-page.php'),
         path.join(pluginDir, 'admin', 'settings-page.php')
     );
-    
+
     fs.copyFileSync(
         path.join(wpDir, 'admin', 'admin.css'),
         path.join(pluginDir, 'admin', 'admin.css')
+    );
+
+    fs.copyFileSync(
+        path.join(wpDir, 'admin', 'admin.js'),
+        path.join(pluginDir, 'admin', 'admin.js')
     );
     
     // Copy readme
@@ -62,6 +68,18 @@ async function packageWordPress() {
             uninstallSrc,
             path.join(pluginDir, 'uninstall.php')
         );
+    }
+
+    // Copy languages directory
+    const languagesDir = path.join(wpDir, 'languages');
+    if (fs.existsSync(languagesDir)) {
+        const languageFiles = fs.readdirSync(languagesDir);
+        languageFiles.forEach(file => {
+            fs.copyFileSync(
+                path.join(languagesDir, file),
+                path.join(pluginDir, 'languages', file)
+            );
+        });
     }
     
     // Copy the built widget JavaScript

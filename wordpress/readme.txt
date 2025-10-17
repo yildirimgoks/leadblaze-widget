@@ -1,8 +1,8 @@
 === LeadBlaze Chat ===
-Contributors: leadblaze
-Tags: chatbot, chat, widget, customer support, ai, live chat
+Contributors: yildirimgoks
+Tags: chatbot, chat, live chat, lead collection, contact form
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Stable tag: 1.0.0
 Requires PHP: 7.2
 License: GPLv2 or later

@@ -7,7 +7,7 @@
  * Author: LeadBlaze
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: chatbot-widget
+ * Text Domain: leadblaze-chat
  * Domain Path: /languages
  */
 
@@ -41,18 +41,12 @@ class ChatbotWidget {
     }
 
     private function init_hooks() {
-        // Load translations
-        add_action('plugins_loaded', array($this, 'load_textdomain'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
         add_shortcode('chatbot_widget', array($this, 'render_shortcode'));
         add_action('wp_footer', array($this, 'maybe_render_floating'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
-    }
-
-    public function load_textdomain() {
-        load_plugin_textdomain('chatbot-widget', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
 
     private function maybe_upgrade() {
@@ -391,16 +385,16 @@ class ChatbotWidget {
         
         <div id="chatbot-widget-container" class="chatbot-widget-floating <?php echo esc_attr($position_class); ?>" data-default-state="<?php echo esc_attr($default_state); ?>" style="display: none;"></div>
         <div id="chatbot-widget-collapsed" class="chatbot-widget-collapsed <?php echo esc_attr($position_class); ?>" style="display: none;">
-            <button class="chatbot-collapsed-button" title="<?php esc_attr_e('Open Chat', 'chatbot-widget'); ?>">
+            <button class="chatbot-collapsed-button" title="<?php esc_attr_e('Open Chat', 'leadblaze-chat'); ?>">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z" fill="currentColor"/>
                     <circle cx="7" cy="9" r="1" fill="currentColor"/>
                     <circle cx="12" cy="9" r="1" fill="currentColor"/>
                     <circle cx="17" cy="9" r="1" fill="currentColor"/>
                 </svg>
-                <span class="chatbot-collapsed-text"><?php _e('Chat', 'chatbot-widget'); ?></span>
+                <span class="chatbot-collapsed-text"><?php esc_html_e('Chat', 'leadblaze-chat'); ?></span>
             </button>
-            <button class="chatbot-close-button" title="<?php esc_attr_e('Close', 'chatbot-widget'); ?>">
+            <button class="chatbot-close-button" title="<?php esc_attr_e('Close', 'leadblaze-chat'); ?>">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="currentColor"/>
                 </svg>
@@ -538,7 +532,7 @@ class ChatbotWidget {
 
     public function render_shortcode($atts) {
         if (empty($this->options['site_key'])) {
-            return '<p>' . esc_html__('Please configure the LeadBlaze Chat in Settings.', 'chatbot-widget') . '</p>';
+            return '<p>' . esc_html__('Please configure the LeadBlaze Chat in Settings.', 'leadblaze-chat') . '</p>';
         }
 
         $atts = shortcode_atts(array(
@@ -552,17 +546,18 @@ class ChatbotWidget {
         
         ob_start();
         ?>
-        <div id="<?php echo $container_id; ?>" style="width: <?php echo esc_attr($atts['width']); ?>; height: <?php echo esc_attr($atts['height']); ?>;"></div>
+        <div id="<?php echo esc_attr($container_id); ?>" style="width: <?php echo esc_attr($atts['width']); ?>; height: <?php echo esc_attr($atts['height']); ?>;"></div>
         <script>
             <?php
                 $greeting_message = !empty($this->options['greeting_message']) ? $this->options['greeting_message'] : '';
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Internal method returns safe JavaScript
                 echo $this->get_history_injection_script($greeting_message);
             ?>
             (function initChatWidget() {
                 var __cfg = {
                     clientId: <?php echo wp_json_encode($this->options['client_id']); ?>,
                     siteKey: <?php echo wp_json_encode($this->options['site_key']); ?>,
-                    container: '#<?php echo $container_id; ?>',
+                    container: '#<?php echo esc_js($container_id); ?>',
                     theme: <?php echo wp_json_encode($atts['theme']); ?>,
                     themeMode: <?php echo wp_json_encode($this->options['theme']); ?>,
                     skipGreeting: true
@@ -607,8 +602,8 @@ class ChatbotWidget {
 
     public function add_admin_menu() {
         add_options_page(
-            __('LeadBlaze Chat Settings', 'chatbot-widget'),
-            __('LeadBlaze Chat', 'chatbot-widget'),
+            __('LeadBlaze Chat Settings', 'leadblaze-chat'),
+            __('LeadBlaze Chat', 'leadblaze-chat'),
             'manage_options',
             'chatbot-widget',
             array($this, 'render_admin_page')
@@ -643,7 +638,7 @@ class ChatbotWidget {
             add_settings_error(
                 'chatbot_widget_settings',
                 'greeting_message_too_long',
-                __('Greeting message was truncated to 150 characters.', 'chatbot-widget'),
+                __('Greeting message was truncated to 150 characters.', 'leadblaze-chat'),
                 'updated'
             );
         } else {
@@ -659,7 +654,7 @@ class ChatbotWidget {
             add_settings_error(
                 'chatbot_widget_settings',
                 'invalid_theme_color',
-                __('Invalid theme color format. Please use a valid hex color (e.g., #eb4034).', 'chatbot-widget'),
+                __('Invalid theme color format. Please use a valid hex color (e.g., #eb4034).', 'leadblaze-chat'),
                 'error'
             );
         }

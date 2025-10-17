@@ -19,7 +19,7 @@ $options = array_merge($default_options, $saved_options);
         <table class="form-table" role="presentation">
             <tr>
                 <th scope="row">
-                    <label for="site_key"><?php _e('Site Key', 'chatbot-widget'); ?></label>
+                    <label for="site_key"><?php esc_html_e('Site Key', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <input type="text" 
@@ -29,14 +29,14 @@ $options = array_merge($default_options, $saved_options);
                            class="regular-text" 
                            required />
                     <p class="description">
-                        <?php _e('Your unique site key provided by LeadBlaze.', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Your unique site key provided by LeadBlaze.', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
                 <th scope="row">
-                    <label for="client_id"><?php _e('Client ID', 'chatbot-widget'); ?></label>
+                    <label for="client_id"><?php esc_html_e('Client ID', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <input type="text" 
@@ -45,14 +45,14 @@ $options = array_merge($default_options, $saved_options);
                            value="<?php echo esc_attr($options['client_id']); ?>" 
                            class="regular-text" />
                     <p class="description">
-                        <?php _e('Optional client identifier for tracking purposes.', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Optional client identifier for tracking purposes.', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
                 <th scope="row">
-                    <label for="theme_color"><?php _e('Theme Color', 'chatbot-widget'); ?></label>
+                    <label for="theme_color"><?php esc_html_e('Theme Color', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <input type="text" 
@@ -62,36 +62,36 @@ $options = array_merge($default_options, $saved_options);
                            class="chatbot-color-picker" 
                            data-default-color="#eb4034" />
                     <p class="description">
-                        <?php _e('Choose the primary color for the chatbot widget. You can pick from the color picker or enter a hex code manually.', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Choose the primary color for the chatbot widget. You can pick from the color picker or enter a hex code manually.', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
                 <th scope="row">
-                    <label for="theme"><?php _e('Theme Mode', 'chatbot-widget'); ?></label>
+                    <label for="theme"><?php esc_html_e('Theme Mode', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <select id="theme" name="chatbot_widget_settings[theme]">
                         <option value="light" <?php selected($options['theme'], 'light'); ?>>
-                            <?php _e('Light', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Light', 'leadblaze-chat'); ?>
                         </option>
                         <option value="dark" <?php selected($options['theme'], 'dark'); ?>>
-                            <?php _e('Dark', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Dark', 'leadblaze-chat'); ?>
                         </option>
                         <option value="auto" <?php selected($options['theme'], 'auto'); ?>>
-                            <?php _e('Auto (System)', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Auto (System)', 'leadblaze-chat'); ?>
                         </option>
                     </select>
                     <p class="description">
-                        <?php _e('Choose between light or dark appearance mode.', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Choose between light or dark appearance mode.', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
                 <th scope="row">
-                    <label for="greeting_message"><?php _e('Greeting Message', 'chatbot-widget'); ?></label>
+                    <label for="greeting_message"><?php esc_html_e('Greeting Message', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <input type="text" 
@@ -100,9 +100,9 @@ $options = array_merge($default_options, $saved_options);
                            value="<?php echo esc_attr($options['greeting_message']); ?>" 
                            class="regular-text" 
                            maxlength="150"
-                           placeholder="<?php _e('Hello! How can I help you today?', 'chatbot-widget'); ?>" />
+                           placeholder="<?php esc_attr_e('Hello! How can I help you today?', 'leadblaze-chat'); ?>" />
                     <p class="description">
-                        <?php _e('First message that will be shown on the chatbot. Maximum 150 characters.', 'chatbot-widget'); ?>
+                        <?php esc_html_e('First message that will be shown on the chatbot. Maximum 150 characters.', 'leadblaze-chat'); ?>
                         <span id="greeting-char-count" class="char-counter">0/150</span>
                     </p>
                 </td>
@@ -110,7 +110,7 @@ $options = array_merge($default_options, $saved_options);
             
             
             <tr>
-                <th scope="row"><?php _e('Display Mode', 'chatbot-widget'); ?></th>
+                <th scope="row"><?php esc_html_e('Display Mode', 'leadblaze-chat'); ?></th>
                 <td>
                     <fieldset>
                         <label>
@@ -118,10 +118,10 @@ $options = array_merge($default_options, $saved_options);
                                    name="chatbot_widget_settings[enable_floating]" 
                                    value="1" 
                                    <?php checked(isset($options['enable_floating']) ? $options['enable_floating'] : false, 1); ?> />
-                            <?php _e('Enable floating widget', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Enable floating widget', 'leadblaze-chat'); ?>
                         </label>
                         <p class="description">
-                            <?php _e('Shows a floating chat widget on your site. Otherwise, use shortcode [chatbot_widget] to place it manually.', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Shows a floating chat widget on your site. Otherwise, use shortcode [chatbot_widget] to place it manually.', 'leadblaze-chat'); ?>
                         </p>
                     </fieldset>
                 </td>
@@ -129,50 +129,50 @@ $options = array_merge($default_options, $saved_options);
             
             <tr>
                 <th scope="row">
-                    <label for="position"><?php _e('Floating Position', 'chatbot-widget'); ?></label>
+                    <label for="position"><?php esc_html_e('Floating Position', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <select id="position" name="chatbot_widget_settings[position]">
                         <option value="bottom-right" <?php selected($options['position'], 'bottom-right'); ?>>
-                            <?php _e('Bottom Right', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Bottom Right', 'leadblaze-chat'); ?>
                         </option>
                         <option value="bottom-left" <?php selected($options['position'], 'bottom-left'); ?>>
-                            <?php _e('Bottom Left', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Bottom Left', 'leadblaze-chat'); ?>
                         </option>
                         <option value="top-right" <?php selected($options['position'], 'top-right'); ?>>
-                            <?php _e('Top Right', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Top Right', 'leadblaze-chat'); ?>
                         </option>
                         <option value="top-left" <?php selected($options['position'], 'top-left'); ?>>
-                            <?php _e('Top Left', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Top Left', 'leadblaze-chat'); ?>
                         </option>
                     </select>
                     <p class="description">
-                        <?php _e('Position of the floating widget on the screen. (Only effective if floating widget is enabled)', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Position of the floating widget on the screen. (Only effective if floating widget is enabled)', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
                 <th scope="row">
-                    <label for="floating_default_state"><?php _e('Default State', 'chatbot-widget'); ?></label>
+                    <label for="floating_default_state"><?php esc_html_e('Default State', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <select id="floating_default_state" name="chatbot_widget_settings[floating_default_state]">
                         <option value="expanded" <?php selected($options['floating_default_state'], 'expanded'); ?>>
-                            <?php _e('Expanded (Full Chat)', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Expanded (Full Chat)', 'leadblaze-chat'); ?>
                         </option>
                         <option value="collapsed" <?php selected($options['floating_default_state'], 'collapsed'); ?>>
-                            <?php _e('Collapsed (Button Only)', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Collapsed (Button Only)', 'leadblaze-chat'); ?>
                         </option>
                     </select>
                     <p class="description">
-                        <?php _e('Choose whether the floating chat appears fully expanded or as a compact button when visitors first load your site. (Only effective if floating widget is enabled)', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Choose whether the floating chat appears fully expanded or as a compact button when visitors first load your site. (Only effective if floating widget is enabled)', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
-                <th scope="row"><?php _e('Display On', 'chatbot-widget'); ?></th>
+                <th scope="row"><?php esc_html_e('Display On', 'leadblaze-chat'); ?></th>
                 <td>
                     <fieldset>
                         <label>
@@ -180,7 +180,7 @@ $options = array_merge($default_options, $saved_options);
                                    name="chatbot_widget_settings[enable_pages]" 
                                    value="all" 
                                    <?php checked($options['enable_pages'], 'all'); ?> />
-                            <?php _e('All Pages', 'chatbot-widget'); ?>
+                            <?php esc_html_e('All Pages', 'leadblaze-chat'); ?>
                         </label><br>
                         
                         <label>
@@ -188,7 +188,7 @@ $options = array_merge($default_options, $saved_options);
                                    name="chatbot_widget_settings[enable_pages]" 
                                    value="home" 
                                    <?php checked($options['enable_pages'], 'home'); ?> />
-                            <?php _e('Home Page Only', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Home Page Only', 'leadblaze-chat'); ?>
                         </label><br>
                         
                         <label>
@@ -196,7 +196,7 @@ $options = array_merge($default_options, $saved_options);
                                    name="chatbot_widget_settings[enable_pages]" 
                                    value="specific" 
                                    <?php checked($options['enable_pages'], 'specific'); ?> />
-                            <?php _e('Specific Pages', 'chatbot-widget'); ?>
+                            <?php esc_html_e('Specific Pages', 'leadblaze-chat'); ?>
                         </label>
                     </fieldset>
                 </td>
@@ -204,7 +204,7 @@ $options = array_merge($default_options, $saved_options);
             
             <tr class="specific-pages" <?php echo $options['enable_pages'] === 'specific' ? '' : 'style="display:none;"'; ?>>
                 <th scope="row">
-                    <label for="specific_pages"><?php _e('Page IDs', 'chatbot-widget'); ?></label>
+                    <label for="specific_pages"><?php esc_html_e('Page IDs', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <input type="text" 
@@ -213,14 +213,14 @@ $options = array_merge($default_options, $saved_options);
                            value="<?php echo esc_attr($options['specific_pages']); ?>" 
                            class="regular-text" />
                     <p class="description">
-                        <?php _e('Comma-separated list of page IDs (e.g., 1,2,3)', 'chatbot-widget'); ?>
+                        <?php esc_html_e('Comma-separated list of page IDs (e.g., 1,2,3)', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
             
             <tr>
                 <th scope="row">
-                    <label for="container_selector"><?php _e('Custom Container', 'chatbot-widget'); ?></label>
+                    <label for="container_selector"><?php esc_html_e('Custom Container', 'leadblaze-chat'); ?></label>
                 </th>
                 <td>
                     <input type="text" 
@@ -230,7 +230,7 @@ $options = array_merge($default_options, $saved_options);
                            class="regular-text" 
                            placeholder="#my-chat-container" />
                     <p class="description">
-                        <?php _e('CSS selector for custom widget placement (overrides floating mode).', 'chatbot-widget'); ?>
+                        <?php esc_html_e('CSS selector for custom widget placement (overrides floating mode).', 'leadblaze-chat'); ?>
                     </p>
                 </td>
             </tr>
@@ -240,21 +240,21 @@ $options = array_merge($default_options, $saved_options);
     </form>
     
     <div class="chatbot-widget-help">
-        <h2><?php _e('Usage', 'chatbot-widget'); ?></h2>
+        <h2><?php esc_html_e('Usage', 'leadblaze-chat'); ?></h2>
         
-        <h3><?php _e('Shortcode', 'chatbot-widget'); ?></h3>
-        <p><?php _e('Place the chatbot anywhere in your content:', 'chatbot-widget'); ?></p>
+        <h3><?php esc_html_e('Shortcode', 'leadblaze-chat'); ?></h3>
+        <p><?php esc_html_e('Place the chatbot anywhere in your content:', 'leadblaze-chat'); ?></p>
         <code>[chatbot_widget]</code>
         
-        <p><?php _e('With custom parameters:', 'chatbot-widget'); ?></p>
+        <p><?php esc_html_e('With custom parameters:', 'leadblaze-chat'); ?></p>
         <code>[chatbot_widget height="500px" width="400px" theme="dark"]</code>
         
-        <h3><?php _e('PHP Function', 'chatbot-widget'); ?></h3>
-        <p><?php _e('For theme developers:', 'chatbot-widget'); ?></p>
+        <h3><?php esc_html_e('PHP Function', 'leadblaze-chat'); ?></h3>
+        <p><?php esc_html_e('For theme developers:', 'leadblaze-chat'); ?></p>
         <code>&lt;?php echo do_shortcode('[chatbot_widget]'); ?&gt;</code>
         
-        <h3><?php _e('JavaScript API', 'chatbot-widget'); ?></h3>
-        <p><?php _e('Programmatic control:', 'chatbot-widget'); ?></p>
+        <h3><?php esc_html_e('JavaScript API', 'leadblaze-chat'); ?></h3>
+        <p><?php esc_html_e('Programmatic control:', 'leadblaze-chat'); ?></p>
         <pre><code>// Send a message
 ChatbotWidget.send('Hello!');
 
