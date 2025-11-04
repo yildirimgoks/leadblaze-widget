@@ -15,29 +15,29 @@ if (!defined('ABSPATH')) {
 
 // Test if the plugin can be loaded
 add_action('plugins_loaded', function() {
-    if (class_exists('ChatbotWidget')) {
-        error_log('Chatbot Widget: Class loaded successfully');
+    if (class_exists('Leadch_Chatbot_Widget')) {
+        error_log('LeadBlaze Chat: Class loaded successfully');
     } else {
-        error_log('Chatbot Widget: Class NOT loaded');
+        error_log('LeadBlaze Chat: Class NOT loaded');
     }
 });
 
 // Log any PHP errors during activation
 register_activation_hook(dirname(__FILE__) . '/chatbot-widget.php', function() {
-    error_log('Chatbot Widget: Activation hook triggered');
+    error_log('LeadBlaze Chat: Activation hook triggered');
     
     // Check PHP version
     if (version_compare(PHP_VERSION, '7.2', '<')) {
-        error_log('Chatbot Widget: PHP version too old: ' . PHP_VERSION);
-        wp_die('Chatbot Widget requires PHP 7.2 or higher');
+        error_log('LeadBlaze Chat: PHP version too old: ' . PHP_VERSION);
+        wp_die('LeadBlaze Chat requires PHP 7.2 or higher');
     }
     
     // Check WordPress version
     global $wp_version;
     if (version_compare($wp_version, '5.0', '<')) {
-        error_log('Chatbot Widget: WordPress version too old: ' . $wp_version);
-        wp_die('Chatbot Widget requires WordPress 5.0 or higher');
+        error_log('LeadBlaze Chat: WordPress version too old: ' . $wp_version);
+        wp_die('LeadBlaze Chat requires WordPress 5.0 or higher');
     }
     
-    error_log('Chatbot Widget: All checks passed');
+    error_log('LeadBlaze Chat: All checks passed');
 });

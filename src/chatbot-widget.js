@@ -113,6 +113,15 @@ export class ChatbotWidget {
       isFloating: config.isFloating === true,
       onCollapse: typeof config.onCollapse === 'function' ? config.onCollapse : undefined,
       floatingDefaultState: config.floatingDefaultState,
+      // Embedded mobile options
+      // Default to sheet mode on mobile so focusing the input opens full-screen
+      // Site can override by passing mobileMode: 'inline'
+      mobileMode: config.mobileMode || 'sheet', // 'inline' | 'sheet'
+      // By default, focusing the input should expand to sheet on mobile
+      // Sites can disable by passing expandOnFocus: false
+      expandOnFocus: config.expandOnFocus !== false,
+      autoSuggestExpandBelowPx: typeof config.autoSuggestExpandBelowPx === 'number' ? config.autoSuggestExpandBelowPx : 420,
+      autoExpandBelowPx: typeof config.autoExpandBelowPx === 'number' ? config.autoExpandBelowPx : null,
       // Preserve skipGreeting if set upstream
       skipGreeting: !!config.skipGreeting
     };

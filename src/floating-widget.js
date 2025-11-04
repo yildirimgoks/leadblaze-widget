@@ -13,6 +13,7 @@ export class FloatingChatbotWidget {
     this.config = null;
     this.isInitialized = false;
     this._initScheduled = false;
+    this._scrollLock = { locked: false, y: 0 };
   }
 
   /**
@@ -51,8 +52,7 @@ export class FloatingChatbotWidget {
       // 'force-collapsed': always collapsed on mobile
       // 'force-closed': always closed on mobile
       mobileStatePolicy: config.mobileStatePolicy || 'auto',
-      skipGreeting: config.skipGreeting,
-      greetingMessage: config.greetingMessage
+      skipGreeting: config.skipGreeting
     };
 
     // Ensure DOM is ready before manipulating body
@@ -94,15 +94,22 @@ export class FloatingChatbotWidget {
       this.floatingButton.create();
       this.floatingButton.show();
       this.container.style.display = 'none';
+      this._applySheet(false);
+      this._unlockScroll();
     } else if (initialState === 'closed') {
       this.floatingButton.create();
       this.floatingButton.hide();
       this.container.style.display = 'none';
+      this._applySheet(false);
+      this._unlockScroll();
     } else {
       // expanded
       this.floatingButton.create();
       this.initializeChatWidget();
       this.container.style.display = 'block';
+      // Mobile: use full-screen sheet and lock background scroll
+      this._applySheet(this._isMobile());
+      if (this._isMobile()) this._lockScroll();
     }
 
     this.isInitialized = true;
@@ -209,6 +216,11 @@ export class FloatingChatbotWidget {
       this.initializeChatWidget();
     }
 
+    // Mobile: enter sheet mode and lock background scroll
+    const isMobile = this._isMobile();
+    this._applySheet(isMobile);
+    if (isMobile) this._lockScroll();
+
     // Save expanded state
     this.saveState('expanded');
   }
@@ -222,6 +234,11 @@ export class FloatingChatbotWidget {
 
     // Show floating button
     this.floatingButton.show();
+
+    // Exit sheet mode and unlock background scroll
+    this._applySheet(false);
+    this._unlockScroll();
+    this.saveState('collapsed');
   }
 
   /**
@@ -259,6 +276,47 @@ export class FloatingChatbotWidget {
     if (this.floatingButton) {
       this.floatingButton.saveState(state);
     }
+  }
+
+  /**
+   * Toggle full-screen sheet mode for the floating container (mobile only)
+   */
+  _applySheet(enable) {
+    if (!this.container) return;
+    if (enable) {
+      this.container.classList.add('is-sheet');
+    } else {
+      this.container.classList.remove('is-sheet');
+    }
+  }
+
+  /**
+   * Prevent page behind the widget from scrolling while sheet is open
+   */
+  _lockScroll() {
+    try {
+      if (this._scrollLock.locked) return;
+      this._scrollLock.y = window.scrollY || window.pageYOffset || 0;
+      const body = document.body;
+      body.style.top = `-${this._scrollLock.y}px`;
+      body.style.position = 'fixed';
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      this._scrollLock.locked = true;
+    } catch (_) {}
+  }
+
+  _unlockScroll() {
+    try {
+      if (!this._scrollLock.locked) return;
+      const body = document.body;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.width = '';
+      body.style.overflow = '';
+      window.scrollTo(0, this._scrollLock.y || 0);
+      this._scrollLock.locked = false;
+    } catch (_) {}
   }
 
   /**
@@ -318,6 +376,7 @@ export class FloatingChatbotWidget {
 
       /* Mobile responsive */
       @media (max-width: 600px) {
+        /* Standard compact mode when not sheet */
         .chatbot-widget-floating {
           width: calc(100vw - 32px);
           height: calc(100vh - 120px);
@@ -336,6 +395,27 @@ export class FloatingChatbotWidget {
         @supports (height: 100dvh) {
           .chatbot-widget-floating {
             height: calc(100dvh - 120px);
+          }
+        }
+
+        /* Full-screen sheet variant when expanded */
+        .chatbot-widget-floating.is-sheet {
+          position: fixed;
+          inset: 0 !important; /* ensure no visible gaps around edges */
+          width: auto;
+          height: auto;
+          max-width: none;
+          max-height: none;
+          min-height: 100vh;
+          border-radius: 0;
+          box-shadow: none;
+          background: #ffffff;
+          backdrop-filter: none;
+          -webkit-backdrop-filter: none;
+        }
+        @supports (height: 100dvh) {
+          .chatbot-widget-floating.is-sheet {
+            min-height: 100dvh;
           }
         }
       }
@@ -387,5 +467,8 @@ export class FloatingChatbotWidget {
 
     this.isInitialized = false;
     console.log('FloatingChatbotWidget unmounted successfully');
+    // Ensure scroll is unlocked if it was locked
+    this._applySheet(false);
+    this._unlockScroll();
   }
 }

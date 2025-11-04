@@ -33,14 +33,14 @@ Enable the floating widget in settings to display it automatically on your chose
 
 **Shortcode**
 Place the chatbot anywhere in your content:
-`[chatbot_widget]`
+`[leadch_widget]`
 
 With custom parameters:
-`[chatbot_widget height="500px" width="400px" theme="dark"]`
+`[leadch_widget height="500px" width="400px" theme="dark"]`
 
 **PHP Template Tag**
 For theme developers:
-`<?php echo do_shortcode('[chatbot_widget]'); ?>`
+`<?php echo do_shortcode('[leadch_widget]'); ?>`
 
 = Requirements =
 
@@ -144,6 +144,6 @@ The widget exposes a global API for programmatic control:
 
 = Hooks and Filters =
 
-`chatbot_widget_before_init` - Modify configuration before initialization
-`chatbot_widget_after_init` - Run code after widget initialization
-`chatbot_widget_should_load` - Control widget loading conditions
+`leadch_before_init` - Modify configuration before initialization
+`leadch_after_init` - Run code after widget initialization
+`leadch_should_load` - Control widget loading conditions

@@ -10,6 +10,7 @@ export class ChatAPI {
     const payload = {
       sessionId: this.config.sessionId,
       clientId: this.config.clientId,
+      greetingMessage: this.config.greetingMessage,
       content: message,
       type: "message"
     };
@@ -43,13 +44,14 @@ export class ChatAPI {
 
       const data = await response.json();
 
-      if (!data || typeof data.content !== 'string') {
+      const content = data && (typeof data.content === 'string' ? data.content : (typeof data.body === 'string' ? data.body : null));
+      if (content == null) {
         throw new Error('Invalid response format from server');
       }
 
       // Return the full response including lead_saved if present
       return {
-        content: data.content,
+        content,
         lead_saved: data.lead_saved || false
       };
     } catch (error) {

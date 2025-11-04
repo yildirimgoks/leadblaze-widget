@@ -10,6 +10,9 @@ export class ChatUI {
     this.messages = [];
     this.isAtBottom = true;
     this.intersectionObserver = null;
+    this._sheetOpen = false;
+    this._scrollLock = { locked: false, y: 0 };
+    this._lastFocusBeforeSheet = null;
     
     // Initialize history API for backend-based conversation history
     this.historyAPI = new HistoryAPI(config);
@@ -27,6 +30,11 @@ export class ChatUI {
 
     // Setup mobile viewport/keyboard behavior
     this.setupMobileViewportHandlers();
+
+    // Smart expand prompt for embedded widgets on constrained height
+    if (!this.config.isFloating && this.shouldShowExpandAffordance()) {
+      this.addExpandPrompt();
+    }
     
     // Show greeting if no history will be injected
     if (!config.skipGreeting) {
@@ -39,6 +47,7 @@ export class ChatUI {
     container.className = 'chatbot-widget';
     container.setAttribute('role', 'dialog');
     container.setAttribute('aria-label', 'Chat conversation');
+    container.setAttribute('aria-labelledby', 'chatbot-widget-title');
     
     // Header
     const header = document.createElement('div');
@@ -47,17 +56,50 @@ export class ChatUI {
     // Check if this is a floating widget using the isFloating flag
     const isFloating = this.config.isFloating === true;
     console.log('ChatUI: isFloating =', isFloating, 'config.isFloating =', this.config.isFloating);
+    // Title
+    const title = document.createElement('h2');
+    title.className = 'chatbot-widget__title';
+    title.textContent = 'Contact us';
+    title.id = 'chatbot-widget-title';
+    header.appendChild(title);
 
-    header.innerHTML = `
-      <h2 class="chatbot-widget__title">Contact us</h2>
-      ${isFloating ? `
-        <button class="chatbot-widget__collapse-btn" title="Minimize" aria-label="Minimize chat">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </button>
-      ` : ''}
-    `;
+    // Floating: collapse button; Embedded on mobile: expand/collapse toggle
+    if (isFloating) {
+      const collapseBtn = document.createElement('button');
+      collapseBtn.className = 'chatbot-widget__collapse-btn';
+      collapseBtn.title = 'Minimize';
+      collapseBtn.setAttribute('aria-label', 'Minimize chat');
+      collapseBtn.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      `;
+      header.appendChild(collapseBtn);
+      collapseBtn.addEventListener('click', () => {
+        if (this.config.onCollapse && typeof this.config.onCollapse === 'function') {
+          this.config.onCollapse();
+        } else {
+          this.collapseWidget();
+        }
+      });
+    } else if (this.isMobileLike()) {
+      // Embedded mobile header toggle button
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'chatbot-widget__expand-btn';
+      toggleBtn.title = 'Expand';
+      toggleBtn.setAttribute('aria-label', 'Expand chat');
+      toggleBtn.innerHTML = this._getExpandIcon();
+      header.appendChild(toggleBtn);
+      this.headerToggleBtn = toggleBtn;
+      toggleBtn.addEventListener('click', () => {
+        if (this._sheetOpen) {
+          this.closeEmbeddedSheet();
+        } else {
+          this._lastFocusBeforeSheet = toggleBtn;
+          this.openEmbeddedSheet();
+        }
+      });
+    }
     
     // Messages container
     const messagesContainer = document.createElement('div');
@@ -84,8 +126,48 @@ export class ChatUI {
     if (isFloating) {
       this.setupFloatingWidget();
     }
+    // Focus trap for floating sheet on mobile
+    if (isFloating && this.isMobileLike()) {
+      this._enableFocusTrap();
+    }
     
     // Widget is now ready for history injection if needed
+  }
+
+  shouldShowExpandAffordance() {
+    try {
+      const threshold = typeof this.config.autoSuggestExpandBelowPx === 'number' ? this.config.autoSuggestExpandBelowPx : 420;
+      const host = this.shadowWrapper && this.shadowWrapper.container ? this.shadowWrapper.container : null;
+      if (!host) return false;
+      const rect = host.getBoundingClientRect();
+      return this.isMobileLike() && rect.height > 0 && rect.height < threshold;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  addExpandPrompt() {
+    const prompt = document.createElement('div');
+    prompt.className = 'chatbot-expand-prompt';
+    const text = document.createElement('span');
+    text.className = 'chatbot-expand-prompt__text';
+    text.textContent = 'Open full screen for a better view';
+    const btn = document.createElement('button');
+    btn.className = 'chatbot-expand-prompt__btn';
+    btn.textContent = 'Expand';
+    btn.addEventListener('click', () => {
+      this._lastFocusBeforeSheet = btn;
+      this.openEmbeddedSheet();
+    });
+    prompt.appendChild(text);
+    prompt.appendChild(btn);
+    // Insert after header
+    const header = this.container.querySelector('.chatbot-widget__header');
+    if (header) {
+      header.insertAdjacentElement('afterend', prompt);
+    } else {
+      this.container.prepend(prompt);
+    }
   }
 
   injectHistory(history) {
@@ -186,6 +268,23 @@ export class ChatUI {
         this.scrollToBottom();
         // Run again after keyboard animation
         setTimeout(() => this.scrollToBottom(), 250);
+        // Optional: auto-expand embedded sheet on focus when constrained or configured
+        try {
+          if (!this.config.isFloating && this.config.mobileMode === 'sheet') {
+            const host = this.shadowWrapper && this.shadowWrapper.container ? this.shadowWrapper.container : null;
+            if (host) {
+              const rect = host.getBoundingClientRect();
+              const limit = typeof this.config.autoExpandBelowPx === 'number' ? this.config.autoExpandBelowPx : null;
+              if (limit && rect.height > 0 && rect.height < limit) {
+                this._lastFocusBeforeSheet = textarea;
+                this.openEmbeddedSheet();
+              } else if (this.config.expandOnFocus === true) {
+                this._lastFocusBeforeSheet = textarea;
+                this.openEmbeddedSheet();
+              }
+            }
+          }
+        } catch (_) {}
       },
       onBlur: () => {
         if (!this.isMobileLike()) return;
@@ -206,18 +305,12 @@ export class ChatUI {
   enableViewportTracking() {
     const vv = window.visualViewport;
     const apply = () => {
-      const h = vv && vv.height ? vv.height : window.innerHeight;
-      // Constrain to positive values
-      const height = Math.max(320, Math.floor(h));
-      this.container.style.setProperty('--vvh', height + 'px');
-      // Keep the latest messages visible as the keyboard animates
-      // Only do this when we are tracking viewport (i.e., input is focused)
+      // Only keep the latest messages visible; avoid resizing the widget to vv-height
+      // Resizing the container causes jumpy layout in some browsers/devtools
       try { this.scrollToBottom(); } catch (_) {}
     };
     // Save listeners so we can remove them
     this._vvApply = apply;
-    // Add class to enable CSS that uses --vvh
-    this.container.classList.add('chatbot-widget--vvh');
     apply();
     if (vv) {
       vv.addEventListener('resize', apply);
@@ -239,9 +332,6 @@ export class ChatUI {
       }
     }
     this._vvApply = null;
-    // Clear custom height so layout returns to normal
-    this.container.style.removeProperty('--vvh');
-    this.container.classList.remove('chatbot-widget--vvh');
   }
 
   isMobileLike() {
@@ -298,7 +388,10 @@ export class ChatUI {
     } finally {
       if (this.chatInput) {
         this.chatInput.enable();
-        this.chatInput.focus();
+        // Do not auto-focus on mobile to avoid sticky keyboard
+        if (!this.isMobileLike()) {
+          this.chatInput.focus();
+        }
       }
     }
   }
@@ -335,8 +428,11 @@ export class ChatUI {
   }
 
   removeLastMessage() {
-    if (this.messages.length > 0) {
-      const lastMessage = this.messages.pop();
+    if (this.messages.length === 0) return;
+    const lastMessage = this.messages[this.messages.length - 1];
+    // Only remove the last message if it's a loading placeholder
+    if (lastMessage && lastMessage.isLoading) {
+      this.messages.pop();
       const lastElement = lastMessage.getElement();
       if (lastElement && lastElement.parentNode) {
         lastElement.parentNode.removeChild(lastElement);
@@ -521,6 +617,181 @@ export class ChatUI {
     }
   }
 
+  // Embedded: open/close full-screen sheet
+  openEmbeddedSheet() {
+    if (this.config.isFloating) return;
+    if (this._sheetOpen) return;
+    const host = this.shadowWrapper && this.shadowWrapper.container ? this.shadowWrapper.container : null;
+    if (!host) return;
+
+    this._ensureEmbeddedSheetStyles();
+    host.classList.add('chatbot-embedded-sheet');
+    // A11y: modal semantics
+    this.container.setAttribute('aria-modal', 'true');
+    this.container.setAttribute('aria-labelledby', 'chatbot-widget-title');
+    // Lock background scroll
+    this._lockScroll();
+    // Focus trap
+    this._enableFocusTrap();
+    this._sheetOpen = true;
+    this._setHeaderToggleMode('collapse');
+    this._setExpandPromptVisible(false);
+  }
+
+  closeEmbeddedSheet() {
+    if (!this._sheetOpen) return;
+    const host = this.shadowWrapper && this.shadowWrapper.container ? this.shadowWrapper.container : null;
+    if (host) host.classList.remove('chatbot-embedded-sheet');
+    this.container.removeAttribute('aria-modal');
+    this._unlockScroll();
+    this._disableFocusTrap();
+    this._sheetOpen = false;
+    // Return focus to trigger if available
+    try { if (this._lastFocusBeforeSheet) this._lastFocusBeforeSheet.focus(); } catch (_) {}
+    this._lastFocusBeforeSheet = null;
+    this._setHeaderToggleMode('expand');
+    this._setExpandPromptVisible(this.shouldShowExpandAffordance());
+  }
+
+  _ensureEmbeddedSheetStyles() {
+    if (document.getElementById('chatbot-embedded-sheet-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'chatbot-embedded-sheet-styles';
+    style.textContent = `
+      .chatbot-embedded-sheet {
+        position: fixed !important;
+        inset: 0 !important; /* cover entire viewport reliably */
+        z-index: 2147483646 !important;
+        background: transparent !important;
+        /* Avoid 1-3px gaps on mobile browsers by relying on inset instead of 100vh */
+        height: auto !important;
+        min-height: 100vh !important;
+      }
+      @supports (height: 100dvh) {
+        .chatbot-embedded-sheet { min-height: 100dvh !important; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  _lockScroll() {
+    try {
+      if (this._scrollLock.locked) return;
+      this._scrollLock.y = window.scrollY || window.pageYOffset || 0;
+      const body = document.body;
+      body.style.top = `-${this._scrollLock.y}px`;
+      body.style.position = 'fixed';
+      body.style.width = '100%';
+      body.style.overflow = 'hidden';
+      this._scrollLock.locked = true;
+    } catch (_) {}
+  }
+
+  _unlockScroll() {
+    try {
+      if (!this._scrollLock.locked) return;
+      const body = document.body;
+      body.style.position = '';
+      body.style.top = '';
+      body.style.width = '';
+      body.style.overflow = '';
+      window.scrollTo(0, this._scrollLock.y || 0);
+      this._scrollLock.locked = false;
+    } catch (_) {}
+  }
+
+  _enableFocusTrap() {
+    if (this._trapHandler) return;
+    this._trapHandler = (e) => {
+      if (e.key !== 'Tab') return;
+      const focusables = this._getFocusables();
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    this.container.addEventListener('keydown', this._trapHandler);
+    // ESC to close (desktop)
+    this._escHandler = (e) => {
+      if (e.key === 'Escape' && !this.isMobileLike()) {
+        if (this.config.isFloating && this.config.onCollapse) {
+          this.config.onCollapse();
+        } else {
+          this.closeEmbeddedSheet();
+        }
+      }
+    };
+    window.addEventListener('keydown', this._escHandler);
+  }
+
+  _disableFocusTrap() {
+    if (this._trapHandler) {
+      this.container.removeEventListener('keydown', this._trapHandler);
+      this._trapHandler = null;
+    }
+    if (this._escHandler) {
+      window.removeEventListener('keydown', this._escHandler);
+      this._escHandler = null;
+    }
+  }
+
+  _getFocusables() {
+    try {
+      const root = this.container;
+      const nodes = root.querySelectorAll('a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])');
+      return Array.from(nodes).filter(el => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
+    } catch (_) {
+      return [];
+    }
+  }
+
+  _getExpandIcon() {
+    return `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7 14H5v5h5v-2H7v-3zm12 3h-3v2h5v-5h-2v3zM7 7h3V5H5v5h2V7zm9-2v2h3v3h2V5h-5z" fill="currentColor"/>
+      </svg>
+    `;
+  }
+
+  _getCollapseIcon() {
+    return `
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 8H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    `;
+  }
+
+  _setHeaderToggleMode(mode) {
+    if (!this.headerToggleBtn) return;
+    if (mode === 'collapse') {
+      this.headerToggleBtn.className = 'chatbot-widget__collapse-btn';
+      this.headerToggleBtn.title = 'Minimize';
+      this.headerToggleBtn.setAttribute('aria-label', 'Minimize chat');
+      this.headerToggleBtn.innerHTML = this._getCollapseIcon();
+    } else {
+      this.headerToggleBtn.className = 'chatbot-widget__expand-btn';
+      this.headerToggleBtn.title = 'Expand';
+      this.headerToggleBtn.setAttribute('aria-label', 'Expand chat');
+      this.headerToggleBtn.innerHTML = this._getExpandIcon();
+    }
+  }
+
+  _setExpandPromptVisible(show) {
+    const prompt = this.container.querySelector('.chatbot-expand-prompt');
+    if (!prompt) return;
+    prompt.style.display = show ? 'flex' : 'none';
+  }
+
   collapseWidget(saveState = true) {
     const widgetContainer = document.getElementById('chatbot-widget-container');
     const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
@@ -656,6 +927,10 @@ export class ChatUI {
     try {
       this.disableViewportTracking();
     } catch (e) {}
+
+    // Ensure focus trap and scroll lock are cleared
+    try { this._disableFocusTrap(); } catch (e) {}
+    try { this._unlockScroll(); } catch (e) {}
 
     // Clear any pending blur timeout
     if (this._blurTimeout) {

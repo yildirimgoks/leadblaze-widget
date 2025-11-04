@@ -190,9 +190,13 @@ export class FloatingButton {
       .chatbot-close-button {
         width: 28px;
         height: 28px;
+        min-width: 28px;
+        min-height: 28px;
+        padding: 0; /* prevent host styles stretching the button */
+        line-height: 0; /* avoid inherited line-height affecting layout */
         background: rgba(0, 0, 0, 0.6);
         color: white;
-        border: none;
+        border: none !important;
         border-radius: 50%;
         cursor: pointer;
         display: flex;
@@ -200,12 +204,23 @@ export class FloatingButton {
         justify-content: center;
         transition: all 0.2s ease;
         flex-shrink: 0;
+        box-sizing: border-box;
       }
 
       .chatbot-close-button:hover {
         background: rgba(0, 0, 0, 0.8);
         transform: scale(1.1);
       }
+
+      /* Ensure icons render even if host page globally overrides SVG fills */
+      .chatbot-close-button svg {
+        width: 14px;
+        height: 14px;
+        display: block;
+        pointer-events: none;
+      }
+      .chatbot-close-button svg path { fill: currentColor !important; }
+      .chatbot-collapsed-button svg path { fill: currentColor !important; }
 
       /* Position classes */
       .chatbot-widget-bottom-right {

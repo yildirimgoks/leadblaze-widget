@@ -21,5 +21,5 @@ add_action('init', function() {
 
 // Simple activation test
 register_activation_hook(__FILE__, function() {
-    update_option('chatbot_widget_minimal_activated', true);
+    update_option('leadch_minimal_activated', true);
 });

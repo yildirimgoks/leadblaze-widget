@@ -57,6 +57,20 @@ export class ChatInput {
         e.preventDefault();
         this.handleSubmit();
       },
+      pointerdown: (e) => {
+        // Improve reliability of focusing on mobile emulation/devices
+        if (this.isMobileLike()) {
+          // Don’t steal focus from send button
+          if (!e.target.closest('.chat-input__send')) {
+            try { textarea.focus(); } catch (_) {}
+          }
+        }
+      },
+      touchstart: () => {
+        if (this.isMobileLike()) {
+          try { textarea.focus(); } catch (_) {}
+        }
+      },
       containerClick: (e) => {
         // Don't interfere if user clicks the send button
         if (!e.target.closest('.chat-input__send')) {
@@ -73,13 +87,7 @@ export class ChatInput {
         }
       },
       focus: () => {
-        // Small delay to ensure keyboard animation has started
-        setTimeout(() => {
-          // Only auto-scroll on mobile/tablet form factors
-          if (this.isMobileLike() && textarea && textarea.scrollIntoView) {
-            textarea.scrollIntoView({ behavior: 'smooth', block: 'end' });
-          }
-        }, 100);
+        // No auto-scroll on focus to avoid jumpy behavior on mobile/devtools
       }
     };
 
@@ -106,6 +114,8 @@ export class ChatInput {
     
     // Make entire input container clickable to focus textarea
     inputContainer.addEventListener('click', this.handlers.containerClick);
+    inputContainer.addEventListener('pointerdown', this.handlers.pointerdown);
+    inputContainer.addEventListener('touchstart', this.handlers.touchstart, { passive: true });
     
     // Handle virtual keyboard on mobile - ensure input stays visible
     textarea.addEventListener('focus', this.handlers.focus);
@@ -236,6 +246,8 @@ export class ChatInput {
       
       if (inputContainer) {
         inputContainer.removeEventListener('click', this.handlers.containerClick);
+        inputContainer.removeEventListener('pointerdown', this.handlers.pointerdown);
+        inputContainer.removeEventListener('touchstart', this.handlers.touchstart);
       }
     }
     

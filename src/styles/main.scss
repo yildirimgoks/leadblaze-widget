@@ -1,5 +1,5 @@
-// CSS Variables for theming
-:root {
+// CSS Variables for theming (scoped to widget for Shadow DOM)
+.chatbot-widget {
   --primary-color: #0066cc;
   --primary-hover: #0052a3;
   --background-color: #ffffff;
@@ -11,6 +11,8 @@
   --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.15);
   --border-radius: 8px;
   --border-radius-small: 4px;
+  --bubble-radius: 20px;
+  --bubble-radius-small: 8px;
   --transition-fast: 150ms ease;
   --transition-medium: 250ms ease;
 }
@@ -53,6 +55,21 @@
   }
 }
 
+/* Ensure no legacy tails render, even from stale bundles */
+.message__content::before,
+.message__content::after,
+.message::before,
+.message::after,
+.message__tail {
+  content: none !important;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
 // Header
 .chatbot-widget__header {
   padding: 1rem;
@@ -60,12 +77,70 @@
   color: white;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
 }
 
 .chatbot-widget__title {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+}
+
+// Floating minimize button in header
+.chatbot-widget__collapse-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--border-radius-small);
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  right: 12px;
+}
+
+.chatbot-widget__collapse-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-widget__collapse-btn:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+// Embedded expand button (mobile header)
+.chatbot-widget__expand-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--border-radius-small);
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  position: absolute;
+  right: 12px;
+}
+
+.chatbot-widget__expand-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chatbot-widget__expand-btn:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
 }
 
 // Messages container
@@ -77,6 +152,8 @@
   flex-direction: column;
   gap: 0.75rem;
   scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 
   // Webkit scrollbar styling
   &::-webkit-scrollbar {
@@ -103,9 +180,10 @@
   flex-direction: column;
   gap: 0.25rem;
   max-width: 85%;
-  opacity: 0;
-  transform: scale(0.95) translateY(10px);
-  animation: messageEnter var(--transition-fast) ease forwards;
+  position: relative;
+  /* Visible by default; animations are applied via --entering class */
+  opacity: 1;
+  transform: none;
 
   &--user {
     align-self: flex-end;
@@ -124,30 +202,37 @@
       color: #c33;
     }
   }
+}
 
-  &--entering {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
+/* Tails disabled: we use clean rounded bubbles without tails */
+
+/* Animate only while entering to avoid invisible-by-default issues */
+.message.message--entering {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+  animation: messageEnter var(--transition-fast) ease forwards;
 }
 
 .message__content {
   padding: 0.75rem 1rem;
-  border-radius: var(--border-radius);
+  border-radius: var(--bubble-radius);
   word-wrap: break-word;
   position: relative;
+  overflow: hidden; /* clip to rounded corners */
 
   .message--user & {
     background-color: var(--primary-color);
     color: white;
-    border-bottom-right-radius: var(--border-radius-small);
+    border-bottom-right-radius: var(--bubble-radius-small);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .message--bot & {
     background-color: var(--surface-color);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
-    border-bottom-left-radius: var(--border-radius-small);
+    border-bottom-left-radius: var(--bubble-radius-small);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   // Handle code and pre elements
@@ -209,6 +294,8 @@
   border-top: 1px solid var(--border-color);
   background-color: var(--background-color);
   padding: 0.75rem;
+  touch-action: manipulation;
+  position: relative;
 
   &--disabled {
     opacity: 0.6;
@@ -220,6 +307,7 @@
   display: flex;
   gap: 0.5rem;
   align-items: flex-end;
+  touch-action: manipulation;
 }
 
 .chat-input__textarea {
@@ -236,6 +324,7 @@
   line-height: 1.4;
   resize: none;
   transition: border-color var(--transition-fast);
+  touch-action: manipulation;
 
   &:focus {
     outline: none;
@@ -305,10 +394,12 @@
   opacity: 0;
   transition: transform var(--transition-medium), opacity var(--transition-medium);
   z-index: 1000;
+  pointer-events: none;
 
   &--visible {
     transform: translateY(0);
     opacity: 1;
+    pointer-events: auto;
   }
 }
 
@@ -378,15 +469,19 @@
 }
 
 // Responsive design
-@media (max-width: 600px) {
-  .chatbot-widget {
-    border-radius: 0;
-    min-height: 100vh;
-    height: 100vh;
+@media (max-width: 768px) {
+  /* Only apply dynamic viewport height when explicitly enabled via class */
+  .chatbot-widget.chatbot-widget--vvh {
+    height: var(--vvh, 100dvh);
+    min-height: var(--vvh, 100dvh);
   }
 
   .chatbot-widget__messages {
     padding: 0.75rem;
+    /* Reserve room so latest messages aren’t obscured */
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+    /* Avoid smooth scroll animation fighting with keyboard animation */
+    scroll-behavior: auto;
   }
 
   .message {
@@ -395,6 +490,8 @@
 
   .chat-input {
     padding: 0.5rem;
+    /* Respect safe area when keyboard/home indicator present */
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
   }
 
   .error-toast {
@@ -402,6 +499,37 @@
     right: 0.5rem;
     bottom: 70px;
   }
+}
+
+// Embedded expand prompt
+.chatbot-expand-prompt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-color);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chatbot-expand-prompt__text {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.chatbot-expand-prompt__btn {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: var(--border-radius-small);
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chatbot-expand-prompt__btn:hover {
+  background: var(--primary-hover);
 }
 
 @media (min-width: 601px) and (max-width: 1024px) {
@@ -451,5 +579,11 @@
 
   .chatbot-widget__messages {
     scroll-behavior: auto;
+  }
+
+  /* Ensure messages are visible even when animations are disabled */
+  .message {
+    opacity: 1;
+    transform: none;
   }
 }

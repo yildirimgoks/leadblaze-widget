@@ -6,8 +6,12 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 // Options created by this plugin
 $options = array(
+    // Legacy keys (pre-prefix)
     'chatbot_widget_settings',
     'chatbot_widget_version',
+    // Current prefixed keys
+    'leadch_settings',
+    'leadch_version',
 );
 
 foreach ($options as $opt) {
@@ -22,4 +26,3 @@ foreach ($options as $opt) {
 // No custom tables or CPTs to remove.
 // Transients (if any) are short-lived and not tracked by this plugin.
 // Client-side localStorage is cleared by the widget logic at runtime.
-

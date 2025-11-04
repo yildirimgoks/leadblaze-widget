@@ -153,7 +153,7 @@ The floating widget appears as a collapsible button that can expand into a full 
 **Step 1**: Add the widget script right before the closing `</body>` tag:
 
 ```html
-<script src="https://cdn.yoursite.com/chatbot-widget-floating.js"
+<script src="https://cdn.yoursite."com/chatbot-widget-floating.js"
         site-key="your-site-key"
         async></script>
 ```

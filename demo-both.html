@@ -115,6 +115,7 @@
   <div class="hero">
     <h1>Both Widgets Demo</h1>
     <p class="subtitle">Testing embedded + floating widgets on the same page</p>
+    <p class="subtitle">On mobile: floating opens full-screen; embedded shows an Expand control and a prompt if space is tight.</p>
 
     <div class="info-box">
       <h3>What's on this page:</h3>
@@ -167,6 +168,30 @@
 
   <!-- Initialize both widgets -->
   <script>
+    // Mock API responses for demo
+    (function(){
+      const originalFetch = window.fetch;
+      window.fetch = function(url, options) {
+        try {
+          const u = typeof url === 'string' ? url : (url && url.url) || '';
+          if (u.includes('leadgate-backend-production.up.railway.app/chat') || u.includes('chatbotbackend.com/chat')) {
+            return new Promise((resolve) => {
+              setTimeout(() => {
+                const responses = [
+                  "Hello! How can I help you today?",
+                  "I'm here to assist you with any questions you might have.",
+                  "Thanks for reaching out! What would you like to know?",
+                  "Great question! Let me provide some helpful information.",
+                ];
+                const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                resolve({ ok: true, json: () => Promise.resolve({ content: randomResponse }) });
+              }, 800 + Math.random() * 1000);
+            });
+          }
+        } catch (_) {}
+        return originalFetch.apply(this, arguments);
+      };
+    })();
     // Wait for scripts to load
     window.addEventListener('load', function() {
       console.log('=== Initializing Both Widgets ===');
@@ -179,7 +204,12 @@
         container: "#embedded-chat",
         theme: "#2196F3",
         themeMode: "light",
-        greetingMessage: "👋 Hi! I'm the embedded widget. How can I help you?"
+        greetingMessage: "👋 Hi! I'm the embedded widget. How can I help you?",
+        history: [
+          { sender: 'bot', content: 'Welcome to the embedded demo.' },
+          { sender: 'user', content: 'Does it support bubbles?' },
+          { sender: 'bot', content: 'Yes — tails and rounded corners included.' }
+        ]
       });
 
       // Initialize floating widget
@@ -190,7 +220,11 @@
         themeMode: "light",
         position: "bottom-right",
         floatingDefaultState: "collapsed",
-        greetingMessage: "👋 Hi! I'm the floating widget. How can I help you?"
+        greetingMessage: "👋 Hi! I'm the floating widget. How can I help you?",
+        history: [
+          { sender: 'bot', content: 'I float at the bottom-right.' },
+          { sender: 'user', content: 'Cool! Love the new bubbles.' }
+        ]
       });
 
       console.log('Both widgets initialized!');

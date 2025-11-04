@@ -13,33 +13,69 @@ export class Message {
     const messageContainer = document.createElement('div');
     messageContainer.className = `message message--${this.type}`;
     messageContainer.setAttribute('role', 'log');
-    
+
     const messageContent = document.createElement('div');
     messageContent.className = 'message__content';
-    
+
     if (this.isLoading) {
       this.createLoadingContent(messageContent);
     } else {
       this.createTextContent(messageContent);
     }
-    
+
+    // Add iMessage-style tail
+    const tail = this.createTail();
+    messageContent.appendChild(tail);
+
     const messageTime = document.createElement('div');
     messageTime.className = 'message__time';
     messageTime.textContent = this.formatTime(this.timestamp);
     messageTime.setAttribute('aria-label', `Sent at ${this.formatTime(this.timestamp, true)}`);
-    
+
     messageContainer.appendChild(messageContent);
     messageContainer.appendChild(messageTime);
-    
-    // Add animation class for entrance
+
+    // Add animation class for entrance and remove it after animation completes
     messageContainer.classList.add('message--entering');
-    
-    // Remove animation class after animation completes
-    requestAnimationFrame(() => {
+    const onAnimEnd = () => {
       messageContainer.classList.remove('message--entering');
-    });
-    
+      messageContainer.removeEventListener('animationend', onAnimEnd);
+    };
+    messageContainer.addEventListener('animationend', onAnimEnd, { once: true });
+
+    // Fallback: if animations are disabled or don't fire, ensure the message becomes visible
+    // Remove the entering class after a short delay if it's still present
+    setTimeout(() => {
+      if (messageContainer && messageContainer.classList && messageContainer.classList.contains('message--entering')) {
+        messageContainer.classList.remove('message--entering');
+        try { messageContainer.removeEventListener('animationend', onAnimEnd); } catch (_) {}
+      }
+    }, 300);
+
     return messageContainer;
+  }
+
+  createTail() {
+    const tailContainer = document.createElement('div');
+    tailContainer.className = 'message__tail';
+
+    if (this.type === 'user') {
+      // Right-side tail for user messages
+      tailContainer.innerHTML = `
+        <svg viewBox="0 0 10 13" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 0 0 L 0 13 Q 0 7 10 0 Z" fill="var(--primary-color)" />
+        </svg>
+      `;
+    } else {
+      // Left-side tail for bot messages
+      tailContainer.innerHTML = `
+        <svg viewBox="0 0 10 13" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 10 0 L 10 13 Q 10 7 0 0 Z" fill="var(--surface-color)" stroke="var(--border-color)" stroke-width="1" />
+        </svg>
+      `;
+    }
+
+    return tailContainer;
   }
 
   createLoadingContent(messageContent) {

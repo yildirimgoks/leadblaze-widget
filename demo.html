@@ -233,7 +233,10 @@ ChatbotWidget.unmount();
         // Mock API responses for demo
         const originalFetch = window.fetch;
         window.fetch = function(url, options) {
-            if (url.includes('chatbotbackend.com/chat')) {
+            if (
+              (typeof url === 'string' && url.includes('chatbotbackend.com/chat')) ||
+              (typeof url === 'string' && url.includes('leadgate-backend-production.up.railway.app/chat'))
+            ) {
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         const responses = [
@@ -249,7 +252,7 @@ ChatbotWidget.unmount();
                         resolve({
                             ok: true,
                             json: () => Promise.resolve({
-                                body: randomResponse
+                                content: randomResponse
                             })
                         });
                     }, 1000 + Math.random() * 2000); // Random delay between 1-3 seconds
@@ -258,16 +261,21 @@ ChatbotWidget.unmount();
             return originalFetch.apply(this, arguments);
         };
 
-        function initLightTheme() {
-            try {
-                console.log('Initializing light theme...');
-                ChatbotWidget.init({
-                    clientId: "light-theme-demo",
-                    container: "#chat-light",
-                    theme: "light",
-                    locale: "en",
-                    greetingMessage: "Welcome! How can I assist you today?"
-                });
+function initLightTheme() {
+    try {
+        console.log('Initializing light theme...');
+        ChatbotWidget.init({
+            clientId: "light-theme-demo",
+            container: "#chat-light",
+            theme: "light",
+            locale: "en",
+            greetingMessage: "Welcome! How can I assist you today?",
+            history: [
+              { sender: 'bot', content: 'Hi! I\'m your assistant.' },
+              { sender: 'user', content: 'Can you show me your pricing?' },
+              { sender: 'bot', content: 'Sure! Plans start at $29/mo.' }
+            ]
+        });
                 activeWidget = 'chat-light';
                 console.log('Light theme initialized successfully');
                 alert('Light theme initialized! You can now send test messages.');
@@ -277,16 +285,21 @@ ChatbotWidget.unmount();
             }
         }
 
-        function initDarkTheme() {
-            try {
-                console.log('Initializing dark theme...');
-                ChatbotWidget.init({
-                    clientId: "dark-theme-demo",
-                    container: "#chat-dark",
-                    theme: "dark",
-                    locale: "en",
-                    greetingMessage: "Hi there! Ready to chat in dark mode?"
-                });
+function initDarkTheme() {
+    try {
+        console.log('Initializing dark theme...');
+        ChatbotWidget.init({
+            clientId: "dark-theme-demo",
+            container: "#chat-dark",
+            theme: "dark",
+            locale: "en",
+            greetingMessage: "Hi there! Ready to chat in dark mode?",
+            history: [
+              { sender: 'bot', content: 'Dark mode engaged.' },
+              { sender: 'user', content: 'Looks sleek!' },
+              { sender: 'bot', content: 'Thanks! How can I help?' }
+            ]
+        });
                 activeWidget = 'chat-dark';
                 console.log('Dark theme initialized successfully');
                 alert('Dark theme initialized! You can now send test messages.');
@@ -296,15 +309,20 @@ ChatbotWidget.unmount();
             }
         }
 
-        function initCustomTheme() {
-            try {
-                console.log('Initializing custom theme...');
-                ChatbotWidget.init({
-                    clientId: "custom-theme-demo",
-                    container: "#chat-custom",
-                    theme: "#9c27b0", // Purple theme
-                    locale: "en"
-                });
+function initCustomTheme() {
+    try {
+        console.log('Initializing custom theme...');
+        ChatbotWidget.init({
+            clientId: "custom-theme-demo",
+            container: "#chat-custom",
+            theme: "#9c27b0", // Purple theme
+            locale: "en",
+            history: [
+              { sender: 'bot', content: 'Welcome to the purple theme.' },
+              { sender: 'user', content: 'Love the color!' },
+              { sender: 'bot', content: 'Happy to hear that.' }
+            ]
+        });
                 activeWidget = 'chat-custom';
                 console.log('Custom theme initialized successfully');
                 alert('Custom theme initialized! You can now send test messages.');
@@ -314,15 +332,20 @@ ChatbotWidget.unmount();
             }
         }
 
-        function initMobileTheme() {
-            try {
-                console.log('Initializing mobile theme...');
-                ChatbotWidget.init({
-                    clientId: "mobile-demo",
-                    container: "#chat-mobile",
-                    theme: "light",
-                    locale: "en"
-                });
+function initMobileTheme() {
+    try {
+        console.log('Initializing mobile theme...');
+        ChatbotWidget.init({
+            clientId: "mobile-demo",
+            container: "#chat-mobile",
+            theme: "light",
+            locale: "en",
+            history: [
+              { sender: 'bot', content: 'This layout is great on phones.' },
+              { sender: 'user', content: 'Agreed! These bubbles look nice.' },
+              { sender: 'bot', content: 'Let me know if you need anything.' }
+            ]
+        });
                 activeWidget = 'chat-mobile';
                 console.log('Mobile theme initialized successfully');
                 alert('Mobile theme initialized! You can now send test messages.');

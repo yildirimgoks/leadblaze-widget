@@ -316,7 +316,10 @@ const chatWidget = ChatbotWidget.getChatWidget();</pre>
         // Mock API responses for demo
         const originalFetch = window.fetch;
         window.fetch = function(url, options) {
-            if (url.includes('leadgate-backend-production.up.railway.app/chat')) {
+            if (
+              (typeof url === 'string' && url.includes('leadgate-backend-production.up.railway.app/chat')) ||
+              (typeof url === 'string' && url.includes('chatbotbackend.com/chat'))
+            ) {
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         const responses = [
@@ -333,7 +336,7 @@ const chatWidget = ChatbotWidget.getChatWidget();</pre>
                         resolve({
                             ok: true,
                             json: () => Promise.resolve({
-                                body: randomResponse
+                                content: randomResponse
                             })
                         });
                     }, 1000 + Math.random() * 2000);
@@ -345,29 +348,34 @@ const chatWidget = ChatbotWidget.getChatWidget();</pre>
         // Initialize with expanded state by default
         let currentWidget = null;
 
-        function testExpandedState() {
-            if (currentWidget) {
-                ChatbotWidget.unmount();
-            }
+  function testExpandedState() {
+      if (currentWidget) {
+          ChatbotWidget.unmount();
+      }
 
-            ChatbotWidget.init({
-                clientId: "floating-demo-expanded",
-                theme: "#eb4034",
-                themeMode: "light",
-                locale: "en",
-                position: "bottom-right",
-                floatingDefaultState: "expanded",
-                greetingMessage: "Welcome! I'm here to help you."
-            });
+      ChatbotWidget.init({
+          clientId: "floating-demo-expanded",
+          theme: "#eb4034",
+          themeMode: "light",
+          locale: "en",
+          position: "bottom-right",
+          floatingDefaultState: "expanded",
+          greetingMessage: "Welcome! I'm here to help you.",
+          history: [
+            { sender: 'bot', content: 'Hello from the floating widget!' },
+            { sender: 'user', content: 'Hey there 👋' },
+            { sender: 'bot', content: 'Try minimizing and expanding again.' }
+          ]
+      });
 
             currentWidget = 'expanded';
             alert('Widget initialized in EXPANDED state!');
         }
 
-        function testCollapsedState() {
-            if (currentWidget) {
-                ChatbotWidget.unmount();
-            }
+  function testCollapsedState() {
+      if (currentWidget) {
+          ChatbotWidget.unmount();
+      }
 
             // Clear saved state first
             try {
@@ -377,15 +385,19 @@ const chatWidget = ChatbotWidget.getChatWidget();</pre>
                 localStorage.removeItem(stateKey);
             } catch (e) {}
 
-            ChatbotWidget.init({
-                clientId: "floating-demo-collapsed",
-                theme: "#9c27b0",
-                themeMode: "light",
-                locale: "en",
-                position: "bottom-right",
-                floatingDefaultState: "collapsed",
-                greetingMessage: "Hi there! Ready to chat?"
-            });
+      ChatbotWidget.init({
+          clientId: "floating-demo-collapsed",
+          theme: "#9c27b0",
+          themeMode: "light",
+          locale: "en",
+          position: "bottom-right",
+          floatingDefaultState: "collapsed",
+          greetingMessage: "Hi there! Ready to chat?",
+          history: [
+            { sender: 'bot', content: 'Click the button to expand.' },
+            { sender: 'user', content: 'Ok!' }
+          ]
+      });
 
             currentWidget = 'collapsed';
             alert('Widget initialized in COLLAPSED state! Click the floating button to expand.');

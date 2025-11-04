@@ -13,7 +13,7 @@ jQuery(document).ready(function($) {
     // Floating widget options are now always visible with disclaimers
     
     // Handle specific pages option visibility
-    $('input[name="chatbot_widget_settings[enable_pages]"]').change(function() {
+    $('input[name="leadch_settings[enable_pages]"]').change(function() {
         if ($(this).val() === 'specific') {
             $('.specific-pages').show();
         } else {

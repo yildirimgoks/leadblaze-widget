@@ -82,3 +82,25 @@
     border-color: #d63638 !important;
     box-shadow: 0 0 2px rgba(214, 54, 56, 0.8) !important;
 }
+
+/* Help section styles moved from inline <style> */
+.chatbot-widget-help {
+    max-width: 800px;
+    margin-top: 40px;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+.chatbot-widget-help h2 { margin-top: 0; }
+.chatbot-widget-help h3 { margin-top: 20px; margin-bottom: 10px; }
+.chatbot-widget-help code,
+.chatbot-widget-help pre {
+    background: #f0f0f1;
+    padding: 5px 10px;
+    border-radius: 3px;
+}
+.chatbot-widget-help pre {
+    padding: 15px;
+    overflow-x: auto;
+}
