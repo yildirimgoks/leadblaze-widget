@@ -23,7 +23,7 @@ add_action('plugins_loaded', function() {
 });
 
 // Log any PHP errors during activation
-register_activation_hook(dirname(__FILE__) . '/chatbot-widget.php', function() {
+register_activation_hook(dirname(__FILE__) . '/chat-widget-for-leadblaze.php', function() {
     error_log('LeadBlaze Chat: Activation hook triggered');
     
     // Check PHP version

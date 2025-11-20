@@ -2,6 +2,22 @@
 
 A lightweight, embeddable chatbot widget that provides seamless chat functionality for any website. Built with vanilla JavaScript, featuring Shadow DOM isolation, responsive design, and comprehensive accessibility support.
 
+## Table of Contents
+- [Features](#-features)
+- [Quick Start](#-quick-start)
+- [Configuration Options](#-configuration-options)
+- [API Reference](#-api-reference)
+- [Distribution Options](#-distribution-options)
+- [Distribution & Installation](#-distribution--installation)
+  - [Embeddable Widget](#embeddable-widget)
+  - [WordPress Plugin](#wordpress-plugin)
+- [Development](#-development)
+- [Testing](#-testing)
+- [Troubleshooting](#-troubleshooting)
+- [License](#-license)
+- [Contributing](#-contributing)
+- [Support](#-support)
+
 ## ✨ Features
 
 - **Lightweight**: ≤25KB gzipped bundle size
@@ -326,6 +342,22 @@ Output files:
 - `dist/chatbot-widget.js` - Minified bundle
 - `dist/chatbot-widget.js.map` - Source map
 
+## 📦 Distribution Options
+
+This repo ships two distribution formats:
+
+- Embeddable widget: `dist/chatbot-widget.js` (IIFE bundle for any website)
+- WordPress plugin: `dist/chat-widget-for-leadblaze.zip` (installable plugin)
+
+Build both with:
+
+```bash
+npm run build         # builds the embeddable bundle
+npm run build:wp      # builds widget and packages the WordPress plugin zip
+```
+
+The WordPress plugin folder inside the zip is `chat-widget-for-leadblaze`, and the main plugin file is `chat-widget-for-leadblaze.php`.
+
 ### Technical Implementation Notes
 
 #### Site Key Extraction Timing
@@ -356,13 +388,38 @@ npm run test:e2e
 ### Demo Page
 Open `demo.html` in your browser to see the widget in action with different configurations.
 
-## 📦 Manual Deployment
+## 📦 Distribution & Installation
 
-To deploy the widget manually:
+### Embeddable Widget
+To deploy the embeddable widget manually:
 
 1. Build the production bundle: `npm run build`
 2. Upload `dist/chatbot-widget.js` to your hosting service or CDN
-3. Update the script src in your integration code to point to the hosted file
+3. Update the script tag on your site to point to the hosted file and include the required `site-key` attribute
+
+Example:
+```html
+<script src="https://cdn.yourdomain.com/chatbot-widget.js" site-key="your-site-key" async></script>
+```
+
+### WordPress Plugin
+To package and install the WordPress plugin:
+
+1. Build the plugin zip: `npm run build:wp`
+2. In your WordPress admin, go to Plugins → Add New → Upload Plugin
+3. Upload `dist/chat-widget-for-leadblaze.zip` and activate
+4. Configure under Settings → LeadBlaze Chat (enter your Site Key and options)
+
+Usage in WordPress:
+- Floating widget: enable in Settings → LeadBlaze Chat
+- Shortcode: `[leadch_widget]`
+- Shortcode with options: `[leadch_widget height="500px" width="400px" theme="dark"]`
+
+Translations:
+- Text domain: `chat-widget-for-leadblaze`
+- Language files path: `languages/`
+- The plugin loads translations via `load_plugin_textdomain( 'chat-widget-for-leadblaze', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );`
+- Contribute `.po/.mo` files in the `languages/` directory using the text domain above.
 
 ### Size Budget
 The widget maintains a strict size budget of ≤25KB gzipped. The build process will fail if this limit is exceeded.

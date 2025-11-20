@@ -10,6 +10,8 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 Embeddable chatbot widget for WordPress sites. Lightweight, responsive, and easy to integrate.
 
+Source code to build this plugin can be found at: https://github.com/yildirimgoks/leadblaze-widget
+
 == Description ==
 
 The LeadBlaze Chat plugin allows you to easily add an AI-powered chat interface to your WordPress site. Perfect for customer support, lead generation, and user engagement.
@@ -50,7 +52,7 @@ For theme developers:
 
 == Installation ==
 
-1. Upload the `chatbot-widget` folder to the `/wp-content/plugins/` directory
+1. Upload the `chat-widget-for-leadblaze` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings > LeadBlaze Chat to configure your settings
 4. Enter your site key and customize the appearance
