@@ -8,11 +8,11 @@ Requires PHP: 7.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Embeddable chatbot widget for WordPress sites. Lightweight, responsive, and easy to integrate.
-
-Source code to build this plugin can be found at: https://github.com/yildirimgoks/leadblaze-widget
+AI-powered chat widget for WordPress. Lightweight, responsive, and easy to integrate with your site.
 
 == Description ==
+
+Source code to build this plugin can be found at: https://github.com/yildirimgoks/leadblaze-widget
 
 The LeadBlaze Chat plugin allows you to easily add an AI-powered chat interface to your WordPress site. Perfect for customer support, lead generation, and user engagement.
 

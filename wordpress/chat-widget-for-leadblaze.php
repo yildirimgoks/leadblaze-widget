@@ -131,7 +131,7 @@ class Leadch_Chatbot_Widget {
         // Enqueue inline CSS and state JS for floating UI using WP APIs
         if (!empty($this->options['enable_floating'])) {
             if (!wp_style_is('leadch-inline-style', 'registered')) {
-                wp_register_style('leadch-inline-style', false);
+                wp_register_style('leadch-inline-style', false, array(), LEADCH_PLUGIN_VERSION);
             }
             wp_enqueue_style('leadch-inline-style');
             $floating_css = $this->get_floating_styles();
@@ -563,14 +563,8 @@ function leadch_activate() {
 register_activation_hook(__FILE__, 'leadch_activate');
 
 // Load plugin text domain for translations
-function leadch_load_textdomain() {
-    load_plugin_textdomain(
-        'chat-widget-for-leadblaze',
-        false,
-        dirname(plugin_basename(__FILE__)) . '/languages'
-    );
-}
-add_action('plugins_loaded', 'leadch_load_textdomain');
+// Note: WordPress automatically loads translations for plugins hosted on WordPress.org since version 4.6
+// The load_plugin_textdomain() call is no longer needed
 
 // Bootstrap
 Leadch_Chatbot_Widget::get_instance();

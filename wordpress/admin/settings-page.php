@@ -4,10 +4,10 @@ if (!defined('ABSPATH')) {
 }
 
 // Get options with proper defaults merged
-$widget_instance = Leadch_Chatbot_Widget::get_instance();
-$default_options = $widget_instance->get_default_options();
-$saved_options = get_option('leadch_settings', array());
-$options = array_merge($default_options, $saved_options);
+$leadch_widget_instance = Leadch_Chatbot_Widget::get_instance();
+$leadch_default_options = $leadch_widget_instance->get_default_options();
+$leadch_saved_options = get_option('leadch_settings', array());
+$leadch_options = array_merge($leadch_default_options, $leadch_saved_options);
 ?>
 
 <div class="wrap">
@@ -22,11 +22,11 @@ $options = array_merge($default_options, $saved_options);
                     <label for="site_key"><?php esc_html_e('Site Key', 'chat-widget-for-leadblaze'); ?></label>
                 </th>
                 <td>
-                    <input type="text" 
-                           id="site_key" 
-                           name="leadch_settings[site_key]" 
-                           value="<?php echo esc_attr($options['site_key']); ?>" 
-                           class="regular-text" 
+                    <input type="text"
+                           id="site_key"
+                           name="leadch_settings[site_key]"
+                           value="<?php echo esc_attr($leadch_options['site_key']); ?>"
+                           class="regular-text"
                            required />
                     <p class="description">
                         <?php esc_html_e('Your unique site key provided by LeadBlaze.', 'chat-widget-for-leadblaze'); ?>
@@ -42,7 +42,7 @@ $options = array_merge($default_options, $saved_options);
                     <input type="text" 
                            id="client_id" 
                            name="leadch_settings[client_id]" 
-                           value="<?php echo esc_attr($options['client_id']); ?>" 
+                           value="<?php echo esc_attr($leadch_options['client_id']); ?>" 
                            class="regular-text" />
                     <p class="description">
                         <?php esc_html_e('Optional client identifier for tracking purposes.', 'chat-widget-for-leadblaze'); ?>
@@ -58,7 +58,7 @@ $options = array_merge($default_options, $saved_options);
                     <input type="text" 
                            id="theme_color" 
                            name="leadch_settings[theme_color]" 
-                           value="<?php echo esc_attr($options['theme_color']); ?>" 
+                           value="<?php echo esc_attr($leadch_options['theme_color']); ?>" 
                            class="chatbot-color-picker" 
                            data-default-color="#eb4034" />
                     <p class="description">
@@ -73,13 +73,13 @@ $options = array_merge($default_options, $saved_options);
                 </th>
                 <td>
                     <select id="theme" name="leadch_settings[theme]">
-                        <option value="light" <?php selected($options['theme'], 'light'); ?>>
+                        <option value="light" <?php selected($leadch_options['theme'], 'light'); ?>>
                             <?php esc_html_e('Light', 'chat-widget-for-leadblaze'); ?>
                         </option>
-                        <option value="dark" <?php selected($options['theme'], 'dark'); ?>>
+                        <option value="dark" <?php selected($leadch_options['theme'], 'dark'); ?>>
                             <?php esc_html_e('Dark', 'chat-widget-for-leadblaze'); ?>
                         </option>
-                        <option value="auto" <?php selected($options['theme'], 'auto'); ?>>
+                        <option value="auto" <?php selected($leadch_options['theme'], 'auto'); ?>>
                             <?php esc_html_e('Auto (System)', 'chat-widget-for-leadblaze'); ?>
                         </option>
                     </select>
@@ -97,7 +97,7 @@ $options = array_merge($default_options, $saved_options);
                     <input type="text" 
                            id="greeting_message" 
                            name="leadch_settings[greeting_message]" 
-                           value="<?php echo esc_attr($options['greeting_message']); ?>" 
+                           value="<?php echo esc_attr($leadch_options['greeting_message']); ?>" 
                            class="regular-text" 
                            maxlength="150"
                            placeholder="<?php esc_attr_e('Hello! How can I help you today?', 'chat-widget-for-leadblaze'); ?>" />
@@ -117,7 +117,7 @@ $options = array_merge($default_options, $saved_options);
                             <input type="checkbox" 
                                    name="leadch_settings[enable_floating]" 
                                    value="1" 
-                                   <?php checked(!empty($options['enable_floating']), 1); ?> />
+                                   <?php checked(!empty($leadch_options['enable_floating']), 1); ?> />
                             <?php esc_html_e('Enable floating widget', 'chat-widget-for-leadblaze'); ?>
                         </label>
                         <p class="description">
@@ -133,16 +133,16 @@ $options = array_merge($default_options, $saved_options);
                 </th>
                 <td>
                     <select id="position" name="leadch_settings[position]">
-                        <option value="bottom-right" <?php selected($options['position'], 'bottom-right'); ?>>
+                        <option value="bottom-right" <?php selected($leadch_options['position'], 'bottom-right'); ?>>
                             <?php esc_html_e('Bottom Right', 'chat-widget-for-leadblaze'); ?>
                         </option>
-                        <option value="bottom-left" <?php selected($options['position'], 'bottom-left'); ?>>
+                        <option value="bottom-left" <?php selected($leadch_options['position'], 'bottom-left'); ?>>
                             <?php esc_html_e('Bottom Left', 'chat-widget-for-leadblaze'); ?>
                         </option>
-                        <option value="top-right" <?php selected($options['position'], 'top-right'); ?>>
+                        <option value="top-right" <?php selected($leadch_options['position'], 'top-right'); ?>>
                             <?php esc_html_e('Top Right', 'chat-widget-for-leadblaze'); ?>
                         </option>
-                        <option value="top-left" <?php selected($options['position'], 'top-left'); ?>>
+                        <option value="top-left" <?php selected($leadch_options['position'], 'top-left'); ?>>
                             <?php esc_html_e('Top Left', 'chat-widget-for-leadblaze'); ?>
                         </option>
                     </select>
@@ -158,10 +158,10 @@ $options = array_merge($default_options, $saved_options);
                 </th>
                 <td>
                     <select id="floating_default_state" name="leadch_settings[floating_default_state]">
-                        <option value="expanded" <?php selected($options['floating_default_state'], 'expanded'); ?>>
+                        <option value="expanded" <?php selected($leadch_options['floating_default_state'], 'expanded'); ?>>
                             <?php esc_html_e('Expanded (Full Chat)', 'chat-widget-for-leadblaze'); ?>
                         </option>
-                        <option value="collapsed" <?php selected($options['floating_default_state'], 'collapsed'); ?>>
+                        <option value="collapsed" <?php selected($leadch_options['floating_default_state'], 'collapsed'); ?>>
                             <?php esc_html_e('Collapsed (Button Only)', 'chat-widget-for-leadblaze'); ?>
                         </option>
                     </select>
@@ -179,7 +179,7 @@ $options = array_merge($default_options, $saved_options);
                             <input type="radio" 
                                    name="leadch_settings[enable_pages]" 
                                    value="all" 
-                                   <?php checked($options['enable_pages'], 'all'); ?> />
+                                   <?php checked($leadch_options['enable_pages'], 'all'); ?> />
                             <?php esc_html_e('All Pages', 'chat-widget-for-leadblaze'); ?>
                         </label><br>
                         
@@ -187,7 +187,7 @@ $options = array_merge($default_options, $saved_options);
                             <input type="radio" 
                                    name="leadch_settings[enable_pages]" 
                                    value="home" 
-                                   <?php checked($options['enable_pages'], 'home'); ?> />
+                                   <?php checked($leadch_options['enable_pages'], 'home'); ?> />
                             <?php esc_html_e('Home Page Only', 'chat-widget-for-leadblaze'); ?>
                         </label><br>
                         
@@ -195,14 +195,14 @@ $options = array_merge($default_options, $saved_options);
                             <input type="radio" 
                                    name="leadch_settings[enable_pages]" 
                                    value="specific" 
-                                   <?php checked($options['enable_pages'], 'specific'); ?> />
+                                   <?php checked($leadch_options['enable_pages'], 'specific'); ?> />
                             <?php esc_html_e('Specific Pages', 'chat-widget-for-leadblaze'); ?>
                         </label>
                     </fieldset>
                 </td>
             </tr>
             
-            <tr class="specific-pages" <?php echo $options['enable_pages'] === 'specific' ? '' : 'style="display:none;"'; ?>>
+            <tr class="specific-pages" <?php echo $leadch_options['enable_pages'] === 'specific' ? '' : 'style="display:none;"'; ?>>
                 <th scope="row">
                     <label for="specific_pages"><?php esc_html_e('Page IDs', 'chat-widget-for-leadblaze'); ?></label>
                 </th>
@@ -210,7 +210,7 @@ $options = array_merge($default_options, $saved_options);
                     <input type="text" 
                            id="specific_pages" 
                            name="leadch_settings[specific_pages]" 
-                           value="<?php echo esc_attr($options['specific_pages']); ?>" 
+                           value="<?php echo esc_attr($leadch_options['specific_pages']); ?>" 
                            class="regular-text" />
                     <p class="description">
                         <?php esc_html_e('Comma-separated list of page IDs (e.g., 1,2,3)', 'chat-widget-for-leadblaze'); ?>
@@ -226,7 +226,7 @@ $options = array_merge($default_options, $saved_options);
                     <input type="text" 
                            id="container_selector" 
                            name="leadch_settings[container_selector]" 
-                           value="<?php echo esc_attr($options['container_selector']); ?>" 
+                           value="<?php echo esc_attr($leadch_options['container_selector']); ?>" 
                            class="regular-text" 
                            placeholder="#my-chat-container" />
                     <p class="description">

@@ -5,7 +5,7 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 }
 
 // Options created by this plugin
-$options = array(
+$leadch_options = array(
     // Legacy keys (pre-prefix)
     'chatbot_widget_settings',
     'chatbot_widget_version',
@@ -14,12 +14,12 @@ $options = array(
     'leadch_version',
 );
 
-foreach ($options as $opt) {
+foreach ($leadch_options as $leadch_opt) {
     // Delete per-site option
-    delete_option($opt);
+    delete_option($leadch_opt);
     // Delete network option (in case it was added on a network install)
     if (function_exists('delete_site_option')) {
-        delete_site_option($opt);
+        delete_site_option($leadch_opt);
     }
 }
 

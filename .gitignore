@@ -102,3 +102,6 @@ tmp/
 temp/
 
 .claude/
+AGENTS.md
+CLAUDE.md
+dist/*
