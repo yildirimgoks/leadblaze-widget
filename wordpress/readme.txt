@@ -52,7 +52,7 @@ For theme developers:
 
 == Installation ==
 
-1. Upload the `chat-widget-for-leadblaze` folder to the `/wp-content/plugins/` directory
+1. Upload the `leadblaze-chat` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Go to Settings > LeadBlaze Chat to configure your settings
 4. Enter your site key and customize the appearance

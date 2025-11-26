@@ -347,7 +347,7 @@ Output files:
 This repo ships two distribution formats:
 
 - Embeddable widget: `dist/chatbot-widget.js` (IIFE bundle for any website)
-- WordPress plugin: `dist/chat-widget-for-leadblaze.zip` (installable plugin)
+- WordPress plugin: `dist/leadblaze-chat.zip` (installable plugin)
 
 Build both with:
 
@@ -356,7 +356,7 @@ npm run build         # builds the embeddable bundle
 npm run build:wp      # builds widget and packages the WordPress plugin zip
 ```
 
-The WordPress plugin folder inside the zip is `chat-widget-for-leadblaze`, and the main plugin file is `chat-widget-for-leadblaze.php`.
+The WordPress plugin folder inside the zip is `leadblaze-chat`, and the main plugin file is `leadblaze-chat.php`.
 
 ### Technical Implementation Notes
 
@@ -407,7 +407,7 @@ To package and install the WordPress plugin:
 
 1. Build the plugin zip: `npm run build:wp`
 2. In your WordPress admin, go to Plugins → Add New → Upload Plugin
-3. Upload `dist/chat-widget-for-leadblaze.zip` and activate
+3. Upload `dist/leadblaze-chat.zip` and activate
 4. Configure under Settings → LeadBlaze Chat (enter your Site Key and options)
 
 Usage in WordPress:
@@ -416,9 +416,9 @@ Usage in WordPress:
 - Shortcode with options: `[leadch_widget height="500px" width="400px" theme="dark"]`
 
 Translations:
-- Text domain: `chat-widget-for-leadblaze`
+- Text domain: `leadblaze-chat`
 - Language files path: `languages/`
-- The plugin loads translations via `load_plugin_textdomain( 'chat-widget-for-leadblaze', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );`
+- WordPress automatically loads translations for plugins hosted on WordPress.org since version 4.6, so manual `load_plugin_textdomain()` calls are no longer required.
 - Contribute `.po/.mo` files in the `languages/` directory using the text domain above.
 
 ### Size Budget

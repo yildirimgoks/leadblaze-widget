@@ -15,7 +15,7 @@ async function packageWordPress() {
     const distDir = path.join(rootDir, 'dist');
     const wpDir = path.join(rootDir, 'wordpress');
     const buildDir = path.join(rootDir, 'build-wp');
-    const outputFile = path.join(distDir, 'chat-widget-for-leadblaze.zip');
+    const outputFile = path.join(distDir, 'leadblaze-chat.zip');
     
     // Clean build directory
     if (fs.existsSync(buildDir)) {
@@ -24,7 +24,7 @@ async function packageWordPress() {
     fs.mkdirSync(buildDir, { recursive: true });
     
     // Create plugin directory structure
-    const pluginDir = path.join(buildDir, 'chat-widget-for-leadblaze');
+    const pluginDir = path.join(buildDir, 'leadblaze-chat');
     fs.mkdirSync(pluginDir, { recursive: true });
     fs.mkdirSync(path.join(pluginDir, 'admin'), { recursive: true });
     fs.mkdirSync(path.join(pluginDir, 'assets'), { recursive: true });
@@ -35,8 +35,8 @@ async function packageWordPress() {
     
     // Copy main plugin file
     fs.copyFileSync(
-        path.join(wpDir, 'chat-widget-for-leadblaze.php'),
-        path.join(pluginDir, 'chat-widget-for-leadblaze.php')
+        path.join(wpDir, 'leadblaze-chat.php'),
+        path.join(pluginDir, 'leadblaze-chat.php')
     );
     
     // Copy admin files
@@ -146,7 +146,7 @@ https://www.gnu.org/licenses/gpl-2.0.html`
         });
         
         archive.pipe(output);
-        archive.directory(pluginDir, 'chat-widget-for-leadblaze');
+        archive.directory(pluginDir, 'leadblaze-chat');
         archive.finalize();
     });
 }
