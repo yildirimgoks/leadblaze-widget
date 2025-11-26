@@ -208,7 +208,10 @@ class Leadch_Chatbot_Widget {
         }
 
         if ($this->options['enable_floating']) {
+            // Signal to the widget that this is a floating instance so it renders
+            // the minimize button in the header and wires collapse/expand correctly
             $config['container'] = '#chatbot-widget-container';
+            $config['isFloating'] = true;
             $config['floatingDefaultState'] = $this->options['floating_default_state'];
         } elseif (!empty($this->options['container_selector'])) {
             $config['container'] = $this->options['container_selector'];
