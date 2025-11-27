@@ -46,6 +46,8 @@ export class FloatingChatbotWidget {
       greetingMessage: config.greetingMessage || 'Hi, how can I help you?',
       position: config.position || 'bottom-right',
       floatingDefaultState: config.floatingDefaultState || 'expanded',
+      // When false, the collapsed floating button cannot be closed (no X)
+      allowFloatingButtonClose: config.allowFloatingButtonClose !== false,
       // Controls how the floating button behaves on mobile (<=600px)
       // 'auto' (default): treat saved 'closed' as 'collapsed' to ensure visibility
       // 'respect-saved': use saved state as-is on mobile
@@ -141,22 +143,32 @@ export class FloatingChatbotWidget {
   _resolveInitialState(savedState) {
     // Non-mobile: simple saved or default
     if (!this._isMobile()) {
-      return savedState || this.config.floatingDefaultState;
+      const candidate = savedState || this.config.floatingDefaultState;
+      if (!this.config.allowFloatingButtonClose && candidate === 'closed') return 'collapsed';
+      return candidate;
     }
 
     const policy = this.config.mobileStatePolicy || 'auto';
     switch (policy) {
       case 'respect-saved':
-        return savedState || this.config.floatingDefaultState;
+        {
+          const candidate = savedState || this.config.floatingDefaultState;
+          if (!this.config.allowFloatingButtonClose && candidate === 'closed') return 'collapsed';
+          return candidate;
+        }
       case 'force-collapsed':
         return 'collapsed';
       case 'force-closed':
-        return 'closed';
+        return this.config.allowFloatingButtonClose ? 'closed' : 'collapsed';
       case 'auto':
       default:
         // Default: ensure visibility by downgrading 'closed' to 'collapsed'
         if (savedState === 'closed') return 'collapsed';
-        return savedState || this.config.floatingDefaultState;
+        {
+          const candidate = savedState || this.config.floatingDefaultState;
+          if (!this.config.allowFloatingButtonClose && candidate === 'closed') return 'collapsed';
+          return candidate;
+        }
     }
   }
 

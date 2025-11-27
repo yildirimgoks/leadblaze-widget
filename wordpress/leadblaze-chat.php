@@ -88,6 +88,9 @@ class Leadch_Chatbot_Widget {
             'position' => 'bottom-right',
             'enable_floating' => false,
             'floating_default_state' => 'expanded',
+            // When true, show the X close next to the collapsed floating button
+            // Allow site owners to disable closing the button entirely
+            'allow_floating_button_close' => true,
             'enable_pages' => 'all',
             'specific_pages' => '',
             'container_selector' => ''
@@ -204,6 +207,12 @@ class Leadch_Chatbot_Widget {
             $config['container'] = '#chatbot-widget-container';
             $config['isFloating'] = true;
             $config['floatingDefaultState'] = $this->options['floating_default_state'];
+            // Control whether users can close the collapsed floating button (X)
+            $config['allowFloatingButtonClose'] = !empty($this->options['allow_floating_button_close']);
+            // Pass position to floating bundle if present
+            if (!empty($this->options['position'])) {
+                $config['position'] = $this->options['position'];
+            }
         } elseif (!empty($this->options['container_selector'])) {
             $config['container'] = $this->options['container_selector'];
         }
@@ -504,6 +513,8 @@ class Leadch_Chatbot_Widget {
         
         // Checkbox - will be missing from $input if unchecked
         $sanitized['enable_floating'] = isset($input['enable_floating']) ? 1 : 0;
+        // Allow close (X) on collapsed floating button
+        $sanitized['allow_floating_button_close'] = isset($input['allow_floating_button_close']) ? 1 : 0;
         
         return $sanitized;
     }

@@ -819,6 +819,11 @@ export class ChatUI {
   }
 
   closeWidget(saveState = true) {
+    // If closing the floating button is not allowed, collapse instead
+    if (this.config && this.config.isFloating && this.config.allowFloatingButtonClose === false) {
+      this.collapseWidget(saveState);
+      return;
+    }
     const widgetContainer = document.getElementById('chatbot-widget-container');
     const collapsedContainer = document.getElementById('chatbot-widget-collapsed');
     
@@ -882,7 +887,11 @@ export class ChatUI {
     const defaultState = this.config.floatingDefaultState || 'expanded';
 
     // Prioritize stored state over default state
-    const finalState = storedState || defaultState;
+    let finalState = storedState || defaultState;
+    // Ensure visibility when closing is disallowed
+    if (this.config && this.config.isFloating && this.config.allowFloatingButtonClose === false && finalState === 'closed') {
+      finalState = 'collapsed';
+    }
 
     // Apply immediately without delay
     switch (finalState) {

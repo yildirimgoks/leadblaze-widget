@@ -113,6 +113,8 @@ export class ChatbotWidget {
       isFloating: config.isFloating === true,
       onCollapse: typeof config.onCollapse === 'function' ? config.onCollapse : undefined,
       floatingDefaultState: config.floatingDefaultState,
+      // When false, do not allow the collapsed floating button to be closed (no X)
+      allowFloatingButtonClose: config.allowFloatingButtonClose !== false,
       // Embedded mobile options
       // Default to sheet mode on mobile so focusing the input opens full-screen
       // Site can override by passing mobileMode: 'inline'

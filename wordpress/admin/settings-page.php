@@ -170,6 +170,24 @@ $leadch_options = array_merge($leadch_default_options, $leadch_saved_options);
                     </p>
                 </td>
             </tr>
+
+            <tr>
+                <th scope="row"><?php esc_html_e('Collapsed Close Button', 'leadblaze-chat'); ?></th>
+                <td>
+                    <fieldset>
+                        <label>
+                            <input type="checkbox"
+                                   name="leadch_settings[allow_floating_button_close]"
+                                   value="1"
+                                   <?php checked(!empty($leadch_options['allow_floating_button_close']), 1); ?> />
+                            <?php esc_html_e('Show close (X) next to collapsed button', 'leadblaze-chat'); ?>
+                        </label>
+                        <p class="description">
+                            <?php esc_html_e('If unchecked, users cannot hide the chat button entirely. Any previously saved "closed" state will be treated as collapsed to keep the button visible. (Only effective if floating widget is enabled)', 'leadblaze-chat'); ?>
+                        </p>
+                    </fieldset>
+                </td>
+            </tr>
             
             <tr>
                 <th scope="row"><?php esc_html_e('Display On', 'leadblaze-chat'); ?></th>
@@ -267,4 +285,3 @@ ChatbotWidget.init({
 });</code></pre>
     </div>
 </div>
-
