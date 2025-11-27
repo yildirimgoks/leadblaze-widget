@@ -99,9 +99,12 @@ class Leadch_Chatbot_Widget {
             return;
         }
 
-        $widget_js = file_exists(LEADCH_PLUGIN_DIR . 'assets/chatbot-widget.js')
-            ? LEADCH_PLUGIN_URL . 'assets/chatbot-widget.js'
-            : LEADCH_PLUGIN_URL . '../dist/chatbot-widget.js';
+        // Choose correct bundle based on "enable_floating"
+        $use_floating = !empty($this->options['enable_floating']);
+        $script_filename = $use_floating ? 'chatbot-widget-floating.js' : 'chatbot-widget.js';
+        $widget_js = file_exists(LEADCH_PLUGIN_DIR . 'assets/' . $script_filename)
+            ? LEADCH_PLUGIN_URL . 'assets/' . $script_filename
+            : LEADCH_PLUGIN_URL . '../dist/' . $script_filename;
 
         wp_enqueue_script(
             'leadch-widget',
@@ -128,20 +131,8 @@ class Leadch_Chatbot_Widget {
             'after'
         );
 
-        // Enqueue inline CSS and state JS for floating UI using WP APIs
-        if (!empty($this->options['enable_floating'])) {
-            if (!wp_style_is('leadch-inline-style', 'registered')) {
-                wp_register_style('leadch-inline-style', false, array(), LEADCH_PLUGIN_VERSION);
-            }
-            wp_enqueue_style('leadch-inline-style');
-            $floating_css = $this->get_floating_styles();
-            if (!empty($floating_css)) {
-                wp_add_inline_style('leadch-inline-style', $floating_css);
-            }
-            $site_key = isset($this->options['site_key']) ? $this->options['site_key'] : '';
-            $default_state = isset($this->options['floating_default_state']) ? $this->options['floating_default_state'] : 'expanded';
-            wp_add_inline_script('leadch-widget', $this->get_floating_state_script($site_key, $default_state), 'after');
-        }
+        // When using the floating bundle, its JS injects styles and manages state.
+        // Do not inject PHP inline CSS or state scripts here to avoid conflicts.
     }
 
     public function enqueue_admin_scripts($hook) {
@@ -228,11 +219,18 @@ class Leadch_Chatbot_Widget {
                 function tryInit() {
                     if (typeof ChatbotWidget !== "undefined") {
                         ChatbotWidget.init(__cfg);
+                        // Resolve underlying chat widget instance for both floating and embedded builds
                         var container = __cfg.container || "#chatbot-widget-container";
-                        var instance = ChatbotWidget.getInstance(container);
+                        var instance = null;
+                        if (ChatbotWidget.getFloatingChatWidget) {
+                          instance = ChatbotWidget.getFloatingChatWidget();
+                        }
+                        if (!instance && ChatbotWidget.getInstance) {
+                          instance = ChatbotWidget.getInstance(container);
+                        }
                         if (instance) {
-                            wirePersistence(instance);
-                            fetchAndInjectHistory(instance, { greetingMessage: %s });
+                          wirePersistence(instance);
+                          fetchAndInjectHistory(instance, { greetingMessage: %s });
                         }
                         return true;
                     }
@@ -384,60 +382,20 @@ class Leadch_Chatbot_Widget {
     }
 
     // Inline styles for floating container, added via wp_add_inline_style
-    private function get_floating_styles() {
-        return '
-            .chatbot-widget-floating { position: fixed; z-index: 9999; width: 380px; height: 600px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); border-radius: 12px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden; backdrop-filter: blur(10px); transition: opacity 0.3s ease, transform 0.3s ease; }
-            .chatbot-widget-collapsed { position: fixed; z-index: 9998; display: flex; align-items: center; gap: 8px; }
-            .chatbot-collapsed-button { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: #ffffff; color: #374151; border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 50px; cursor: pointer; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 14px; font-weight: 500; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); transition: all 0.2s ease; }
-            .chatbot-collapsed-button:hover { background: #f9fafb; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2); }
-            .chatbot-close-button { width: 28px; height: 28px; background: rgba(0, 0, 0, 0.6); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
-            .chatbot-close-button:hover { background: rgba(0, 0, 0, 0.8); transform: scale(1.1); }
-            .chatbot-widget-bottom-right { bottom: 24px; right: 24px; }
-            .chatbot-widget-bottom-left { bottom: 24px; left: 24px; }
-            .chatbot-widget-top-right { top: 24px; right: 24px; }
-            .chatbot-widget-top-left { top: 24px; left: 24px; }
-            @media (max-width: 600px) {
-                .chatbot-widget-floating { width: calc(100vw - 32px); height: calc(100vh - 120px); max-width: none; bottom: 16px !important; right: 16px !important; left: 16px !important; top: auto !important; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); }
-            }
-            @media (prefers-color-scheme: dark) {
-                .chatbot-widget-floating { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.05); }
-            }
-        ';
-    }
+    // Legacy CSS injector retained for backward compatibility (unused for floating bundle)
+    private function get_floating_styles() { return ''; }
 
     // Inline script for initial floating state, added via wp_add_inline_script
-    private function get_floating_state_script($site_key, $default_state) {
-        $site_key_js = wp_json_encode($site_key);
-        $default_state_js = wp_json_encode($default_state);
-        return "(function(){\n  var siteKey = " . $site_key_js . " || 'default';\n  var domain = window.location.hostname;\n  var stateKey = 'chatbot-widget-state-' + siteKey + '-' + domain;\n  var storedState = null;\n  try { storedState = localStorage.getItem(stateKey); } catch(e) {}\n  var finalState = storedState || " . $default_state_js . " || 'expanded';\n  function applyState(){\n    var container = document.getElementById('chatbot-widget-container');\n    var collapsed = document.getElementById('chatbot-widget-collapsed');\n    if (!container || !collapsed) return;\n    if (finalState === 'collapsed') { container.style.display = 'none'; collapsed.style.display = 'flex'; }\n    else if (finalState === 'closed') { container.style.display = 'none'; collapsed.style.display = 'none'; }\n    else { container.style.display = 'block'; collapsed.style.display = 'none'; }\n  }\n  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', applyState); } else { applyState(); }\n})();";
-    }
+    private function get_floating_state_script($site_key, $default_state) { return ''; }
 
     public function maybe_render_floating() {
         if (!$this->should_load_widget() || !$this->options['enable_floating']) {
             return;
         }
 
-        $position_class = 'chatbot-widget-' . $this->options['position'];
-        $default_state = $this->options['floating_default_state'];
-        ?>
-        <div id="chatbot-widget-container" class="chatbot-widget-floating <?php echo esc_attr($position_class); ?>" data-default-state="<?php echo esc_attr($default_state); ?>" style="display: none;"></div>
-        <div id="chatbot-widget-collapsed" class="chatbot-widget-collapsed <?php echo esc_attr($position_class); ?>" style="display: none;">
-            <button class="chatbot-collapsed-button" title="<?php esc_attr_e('Open Chat', 'leadblaze-chat'); ?>">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z" fill="currentColor"/>
-                    <circle cx="7" cy="9" r="1" fill="currentColor"/>
-                    <circle cx="12" cy="9" r="1" fill="currentColor"/>
-                    <circle cx="17" cy="9" r="1" fill="currentColor"/>
-                </svg>
-                <span class="chatbot-collapsed-text"><?php esc_html_e('Chat', 'leadblaze-chat'); ?></span>
-            </button>
-            <button class="chatbot-close-button" title="<?php esc_attr_e('Close', 'leadblaze-chat'); ?>">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="currentColor"/>
-                </svg>
-            </button>
-        </div>
-        <?php
+        // With the floating bundle, JS creates and styles the container and trigger.
+        // No server-rendered markup is needed here.
+        return;
     }
 
     public function render_shortcode($atts) {

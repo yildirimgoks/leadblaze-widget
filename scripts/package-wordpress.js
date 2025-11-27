@@ -82,24 +82,29 @@ async function packageWordPress() {
         });
     }
     
-    // Copy the built widget JavaScript
-    const widgetJs = path.join(distDir, 'chatbot-widget.js');
-    if (fs.existsSync(widgetJs)) {
-        fs.copyFileSync(
-            widgetJs,
-            path.join(pluginDir, 'assets', 'chatbot-widget.js')
-        );
-        
-        // Copy sourcemap if it exists
-        const sourceMap = path.join(distDir, 'chatbot-widget.js.map');
-        if (fs.existsSync(sourceMap)) {
+    // Copy the built widget JavaScript (both embedded and floating bundles)
+    const bundles = [
+        'chatbot-widget.js',
+        'chatbot-widget-floating.js'
+    ];
+    for (const file of bundles) {
+        const src = path.join(distDir, file);
+        if (fs.existsSync(src)) {
             fs.copyFileSync(
-                sourceMap,
-                path.join(pluginDir, 'assets', 'chatbot-widget.js.map')
+                src,
+                path.join(pluginDir, 'assets', file)
             );
+            // Copy sourcemap if it exists
+            const mapSrc = src + '.map';
+            if (fs.existsSync(mapSrc)) {
+                fs.copyFileSync(
+                    mapSrc,
+                    path.join(pluginDir, 'assets', file + '.map')
+                );
+            }
+        } else {
+            console.warn(`⚠️  Warning: ${file} not found in dist/. Run "npm run build" first.`);
         }
-    } else {
-        console.warn('⚠️  Warning: chatbot-widget.js not found in dist/. Run "npm run build" first.');
     }
     
     // Create LICENSE file

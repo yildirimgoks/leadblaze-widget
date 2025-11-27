@@ -3,6 +3,8 @@
  * Creates a collapsible floating chat button with expand/collapse functionality
  */
 
+import { ShadowDOMWrapper } from '../utils/shadow-dom.js';
+
 export class FloatingButton {
   constructor(config, onExpand) {
     this.config = config;
@@ -10,19 +12,74 @@ export class FloatingButton {
     this.container = null;
     this.collapsedButton = null;
     this.closeButton = null;
+    this.host = null;
+    this.shadowWrapper = null;
   }
 
   /**
    * Create and inject the floating button elements into the page
    */
   create() {
-    // Create collapsed button container
+    // Create a dedicated host and Shadow DOM for isolation
+    if (!this.host) {
+      this.host = document.createElement('div');
+      this.host.id = 'chatbot-floating-button-host';
+      document.body.appendChild(this.host);
+    }
+
+    // If Shadow DOM is supported, isolate styles; otherwise fall back to light DOM
+    if (this.host.attachShadow) {
+      this.shadowWrapper = new ShadowDOMWrapper(this.host);
+      // Override generic wrapper containment so fixed-position content isn't clipped
+      this.shadowWrapper.injectStyles(':host{ contain: none !important; }');
+      // Build collapsed button inside shadow root
+      this.collapsedButton = document.createElement('div');
+      this.collapsedButton.id = 'chatbot-widget-collapsed';
+      this.collapsedButton.className = `chatbot-widget-collapsed chatbot-widget-${this.config.position}`;
+      this.collapsedButton.style.display = 'none';
+
+      const button = document.createElement('button');
+      button.className = 'chatbot-collapsed-button';
+      button.title = 'Open Chat';
+      button.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H5.17L4 17.17V4H20V16Z" fill="currentColor"/>
+          <circle cx="7" cy="9" r="1" fill="currentColor"/>
+          <circle cx="12" cy="9" r="1" fill="currentColor"/>
+          <circle cx="17" cy="9" r="1" fill="currentColor"/>
+        </svg>
+        <span class="chatbot-collapsed-text">Chat</span>
+      `;
+
+      this.closeButton = document.createElement('button');
+      this.closeButton.className = 'chatbot-close-button';
+      this.closeButton.title = 'Close';
+      this.closeButton.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="currentColor"/>
+        </svg>
+      `;
+
+      this.collapsedButton.appendChild(button);
+      this.collapsedButton.appendChild(this.closeButton);
+
+      // Event listeners
+      button.addEventListener('click', () => this.handleExpand());
+      this.closeButton.addEventListener('click', (e) => this.handleClose(e));
+
+      // Inject styles into shadow root
+      this.injectStyles(true);
+      this.shadowWrapper.appendChild(this.collapsedButton);
+
+      return this.collapsedButton;
+    }
+
+    // Fallback: light DOM (older browsers)
     this.collapsedButton = document.createElement('div');
     this.collapsedButton.id = 'chatbot-widget-collapsed';
     this.collapsedButton.className = `chatbot-widget-collapsed chatbot-widget-${this.config.position}`;
-    this.collapsedButton.style.display = 'none'; // Initially hidden
+    this.collapsedButton.style.display = 'none';
 
-    // Create the button with icon and text
     const button = document.createElement('button');
     button.className = 'chatbot-collapsed-button';
     button.title = 'Open Chat';
@@ -36,7 +93,6 @@ export class FloatingButton {
       <span class="chatbot-collapsed-text">Chat</span>
     `;
 
-    // Create close button (small X icon)
     this.closeButton = document.createElement('button');
     this.closeButton.className = 'chatbot-close-button';
     this.closeButton.title = 'Close';
@@ -49,16 +105,11 @@ export class FloatingButton {
     this.collapsedButton.appendChild(button);
     this.collapsedButton.appendChild(this.closeButton);
 
-    // Setup event listeners
     button.addEventListener('click', () => this.handleExpand());
     this.closeButton.addEventListener('click', (e) => this.handleClose(e));
 
-    // Inject styles
-    this.injectStyles();
-
-    // Append to body
-    document.body.appendChild(this.collapsedButton);
-
+    this.injectStyles(false);
+    this.host.appendChild(this.collapsedButton);
     return this.collapsedButton;
   }
 
@@ -140,15 +191,8 @@ export class FloatingButton {
   /**
    * Inject styles for the floating button
    */
-  injectStyles() {
-    // Check if styles already exist
-    if (document.getElementById('chatbot-floating-button-styles')) {
-      return;
-    }
-
-    const style = document.createElement('style');
-    style.id = 'chatbot-floating-button-styles';
-    style.textContent = `
+  injectStyles(inShadow = false) {
+    const css = `
       .chatbot-widget-collapsed {
         position: fixed;
         z-index: 2147483645; /* Ensure above common site overlays */
@@ -283,19 +327,26 @@ export class FloatingButton {
         }
       }
     `;
-
-    document.head.appendChild(style);
+    if (inShadow && this.shadowWrapper) {
+      this.shadowWrapper.injectStyles(css);
+    } else {
+      // Light DOM fallback: dedupe style injection
+      if (document.getElementById('chatbot-floating-button-styles')) return;
+      const style = document.createElement('style');
+      style.id = 'chatbot-floating-button-styles';
+      style.textContent = css;
+      document.head.appendChild(style);
+    }
   }
 
   /**
    * Destroy the floating button
    */
   destroy() {
-    if (this.collapsedButton && this.collapsedButton.parentNode) {
-      this.collapsedButton.parentNode.removeChild(this.collapsedButton);
+    if (this.host && this.host.parentNode) {
+      this.host.parentNode.removeChild(this.host);
     }
-
-    // Remove styles if no other floating widgets exist
+    // Remove global style only if we were in light DOM and no other widget uses it
     const style = document.getElementById('chatbot-floating-button-styles');
     if (style && !document.querySelector('.chatbot-widget-collapsed')) {
       style.remove();
